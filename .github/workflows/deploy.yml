@@ -36,8 +36,12 @@ jobs:
         working-directory: ./packages/frontend
         run: npm run build
 
-      - name: Install AWS CDK
-        run: npm install -g aws-cdk
+      # - name: Install AWS CDK (Removed to use local npx cdk)
+      #   run: npm install -g aws-cdk
+
+      - name: Debug Dependencies
+        working-directory: ./packages/backend
+        run: npm list --depth=0 || true
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -50,7 +54,7 @@ jobs:
       - name: Deploy DEV Stack
         if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/develop')
         working-directory: ./packages/backend
-        run: cdk deploy --all --require-approval never -c stage=dev
+        run: npx cdk deploy --all --require-approval never -c stage=dev
 
       # Deploy Prod Environment (On Merge to Main)
       - name: Deploy PROD Stack
