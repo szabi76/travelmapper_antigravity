@@ -56,7 +56,10 @@ jobs:
       - name: Deploy DEV Stack
         if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/develop')
         working-directory: ./packages/backend
-        run: ./node_modules/.bin/cdk deploy --all --require-approval never -c stage=dev
+        run: |
+          echo "DEBUG: Listing .bin directory"
+          ls -la node_modules/.bin/ || echo "node_modules/.bin not found"
+          npx aws-cdk deploy --all --require-approval never -c stage=dev
 
       # Deploy Prod Environment (On Merge to Main)
       - name: Deploy PROD Stack
