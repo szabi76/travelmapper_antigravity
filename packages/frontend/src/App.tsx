@@ -7,12 +7,16 @@ import { getNodeChildren } from './lib/api';
 
 import LoginModal from './components/LoginModal';
 import DebugConsole from './components/DebugConsole';
+import NodeDetails from './components/NodeDetails';
 
 function App() {
-  const { addNodes, addEdges, nodes } = useGraphStore();
+  const { addNodes, addEdges, nodes, setSelectedNode } = useGraphStore();
 
 
   const handleNodeClick = async (node: any) => {
+    // Show Details Panel
+    setSelectedNode(node);
+
     // Check if children loaded? We can check backend or just fetch.
     if (node.data.childrenLoaded) return; // Optimization
 
@@ -72,6 +76,8 @@ function App() {
       <Sidebar />
       <div className="flex-1 relative">
         <GraphCanvas onNodeClick={handleNodeClick} />
+
+        <NodeDetails />
 
         {nodes.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

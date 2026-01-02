@@ -25,18 +25,22 @@ interface GraphState {
     addNodes: (nodes: AppNode[]) => void;
     addEdges: (edges: ReactFlowEdge[]) => void;
     clearGraph: () => void;
+    selectedNode: AppNode | null;
+    setSelectedNode: (node: AppNode | null) => void;
 }
 
 export const useGraphStore = create<GraphState>((set, get) => ({
     nodes: [],
     edges: [],
+    selectedNode: null,
     onNodesChange: (changes) => set({ nodes: applyNodeChanges(changes, get().nodes) as AppNode[] }),
     onEdgesChange: (changes) => set({ edges: applyEdgeChanges(changes, get().edges) }),
     setNodes: (nodes) => set({ nodes }),
     setEdges: (edges) => set({ edges }),
     addNodes: (newNodes) => set({ nodes: [...get().nodes, ...newNodes] }),
     addEdges: (newEdges) => set({ edges: [...get().edges, ...newEdges] }),
-    clearGraph: () => set({ nodes: [], edges: [] }),
+    clearGraph: () => set({ nodes: [], edges: [], selectedNode: null }),
+    setSelectedNode: (node) => set({ selectedNode: node }),
 }));
 
 interface SessionState {
