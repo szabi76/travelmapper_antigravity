@@ -3,6 +3,7 @@ import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as nodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import * as path from 'path';
 
@@ -65,6 +66,14 @@ export class ApiStack extends cdk.Stack {
         // Node handler might read parent context from discovery/nodes?
 
         props.sessionsTable.grantReadWriteData(sessionHandler);
+
+        // Grant Bedrock Access for AI
+        const bedrockPolicy = new iam.PolicyStatement({
+            actions: ['bedrock:InvokeModel'],
+            resources: ['*'], // Or restrict to specific model ARN
+        });
+        discoveryHandler.addToRolePolicy(bedrockPolicy);
+        nodeHandler.addToRolePolicy(bedrockPolicy);
 
         // API Gateway
         const api = new apigateway.RestApi(this, 'TravelDiscoveryApi', {
