@@ -56,7 +56,7 @@ jobs:
       - name: Deploy DEV Stack
         if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/develop')
         working-directory: ./packages/backend
-        run: npm run cdk -- deploy --all --require-approval never -c stage=dev
+        run: ./node_modules/.bin/cdk deploy --all --require-approval never -c stage=dev
 
       # Deploy Prod Environment (On Merge to Main)
       - name: Deploy PROD Stack
