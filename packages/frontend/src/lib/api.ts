@@ -25,17 +25,17 @@ export const createDiscovery = async (prompt: string) => {
 };
 
 export const getDiscovery = async (id: string) => {
-    const response = await api.get(`/discoveries/${id}`);
+    const response = await api.get(`/discoveries/${encodeURIComponent(id)}`);
     return response.data;
 };
 
 export const getNode = async (id: string) => {
-    const response = await api.get(`/nodes/${id}`);
+    const response = await api.get(`/nodes/${encodeURIComponent(id)}`);
     return response.data;
 };
 
 export const getNodeChildren = async (id: string) => {
-    const response = await api.get(`/nodes/${id}/children`);
+    const response = await api.get(`/nodes/${encodeURIComponent(id)}/children`);
     return response.data;
 };
 
