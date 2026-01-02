@@ -6,6 +6,7 @@ import { useGraphStore } from './lib/store';
 import { getNodeChildren } from './lib/api';
 
 import LoginModal from './components/LoginModal';
+import DebugConsole from './components/DebugConsole';
 
 function App() {
   const { addNodes, addEdges, nodes } = useGraphStore();
@@ -81,6 +82,7 @@ function App() {
           </div>
         )}
       </div>
+      <DebugConsole />
     </div>
   );
 }
