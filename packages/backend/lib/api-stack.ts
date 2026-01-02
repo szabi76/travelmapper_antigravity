@@ -12,6 +12,7 @@ interface ApiStackProps extends cdk.StackProps {
     sessionsTable: dynamodb.Table;
     aiCacheTable: dynamodb.Table;
     allowedOrigin: string;
+    apiSecretToken: string;
 }
 
 export class ApiStack extends cdk.Stack {
@@ -25,6 +26,7 @@ export class ApiStack extends cdk.Stack {
             SESSIONS_TABLE: props.sessionsTable.tableName,
             AI_CACHE_TABLE: props.aiCacheTable.tableName,
             ALLOWED_ORIGIN: props.allowedOrigin,
+            API_SECRET_TOKEN: props.apiSecretToken,
         };
 
         // Discovery Handler

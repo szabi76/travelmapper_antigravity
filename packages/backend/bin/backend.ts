@@ -21,5 +21,6 @@ const apiStack = new ApiStack(app, `${prefix}-TravelDiscoveryApiStack`, {
   sessionsTable: databaseStack.sessionsTable,
   aiCacheTable: databaseStack.aiCacheTable,
   allowedOrigin: frontendStack.siteUrl,
+  apiSecretToken: process.env.API_SECRET_TOKEN || 'local-dev-token', // Fallback for local dev
 });
 

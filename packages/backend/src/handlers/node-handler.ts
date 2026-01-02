@@ -15,6 +15,12 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     const idParameter = event.pathParameters?.id;
     const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN || '*', };
 
+    // Auth Check
+    const authHeader = event.headers['Authorization'] || event.headers['authorization'];
+    if (!authHeader || authHeader !== `Bearer ${process.env.API_SECRET_TOKEN}`) {
+        return { statusCode: 401, headers, body: JSON.stringify({ message: 'Unauthorized' }) };
+    }
+
     console.log(`${method} ${path}`, idParameter);
 
     try {
