@@ -1,0 +1,178 @@
+openapi: 3.0.0
+info:
+  title: TravelMapper API
+  description: API for the Travel Discovery Application
+  version: 1.0.0
+servers:
+  - url: https://{api_id}.execute-api.{region}.amazonaws.com/prod
+    description: Production API
+  - url: http://localhost:3000
+    description: Local Development
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Simple shared secret token for MVP
+
+security:
+  - BearerAuth: []
+
+paths:
+  /discoveries:
+    get:
+      summary: List all discoveries
+      operationId: listDiscoveries
+      responses:
+        '200':
+          description: A list of discovery sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Discovery'
+    post:
+      summary: Start a new discovery journey
+      operationId: createDiscovery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                  example: "A weekend in Tokyo"
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discovery'
+
+  /discoveries/{id}:
+    get:
+      summary: Get details of a specific discovery
+      operationId: getDiscovery
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Discovery details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discovery'
+        '404':
+          description: Not Found
+
+  /nodes/{id}:
+    get:
+      summary: Get a specific node
+      operationId: getNode
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Node details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Node'
+
+  /nodes/{id}/children:
+    get:
+      summary: Get (and optionally generate) child nodes
+      operationId: getNodeChildren
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of child nodes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Node'
+
+  /sessions/{id}:
+    get:
+      summary: Get session state (viewport, selection)
+      operationId: getSession
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session state
+    put:
+      summary: Update session state
+      operationId: updateSession
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated
+
+components:
+  schemas:
+    Discovery:
+      type: object
+      properties:
+        id:
+          type: string
+        prompt:
+          type: string
+        rootNodeId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+    
+    Node:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        category:
+          type: string
+        type:
+          type: string
+        content:
+          type: object
+        childrenLoaded:
+          type: boolean
