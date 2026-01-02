@@ -7,7 +7,7 @@ import { AIPrompts } from '../config/prompts';
 
 const bedrock = new BedrockRuntimeClient({ region: process.env.AWS_REGION });
 const AI_CACHE_TABLE = process.env.AI_CACHE_TABLE!;
-const MODEL_ID = 'anthropic.claude-sonnet-4-5-20250929-v1:0';
+const MODEL_ID = 'us.anthropic.claude-sonnet-4-5-20250929-v1:0';
 
 export class AIService {
 
