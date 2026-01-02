@@ -24,16 +24,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      - name: Install Dependencies (Root)
-        run: npm install
-
-      # - name: Debug Dependencies
-      #   working-directory: ./packages/backend
-      #   run: npm list --depth=0 || true
-
-      - name: Build Backend
+      - name: Install Backend Dependencies
         working-directory: ./packages/backend
-        run: npm run build
+        run: |
+          npm install
+          npm run build
 
       - name: Install Frontend Dependencies
         working-directory: ./packages/frontend
