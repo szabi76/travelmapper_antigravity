@@ -68,7 +68,7 @@ jobs:
           
           # Extract Outputs
           echo "Extracting Outputs..."
-          API_URL=$(jq -r '."Dev-TravelDiscoveryApiStack".TravelDiscoveryApiEndpoint*' ./cdk-outputs.json)
+          API_URL=$(jq -r '."Dev-TravelDiscoveryApiStack" | to_entries | .[] | select(.key | startswith("TravelDiscoveryApiEndpoint")) | .value' ./cdk-outputs.json)
           BUCKET_NAME=$(jq -r '."Dev-TravelDiscoveryFrontendStack".FrontendBucketName' ./cdk-outputs.json)
           DISTRIBUTION_ID=$(jq -r '."Dev-TravelDiscoveryFrontendStack".FrontendDistributionId' ./cdk-outputs.json)
           

@@ -29,7 +29,7 @@ export class FrontendStack extends cdk.Stack {
         // 3. CloudFront Distribution
         const distribution = new cloudfront.Distribution(this, 'TravelDiscoveryDistribution', {
             defaultBehavior: {
-                origin: new origins.S3Origin(siteBucket, { originAccessIdentity: oai }),
+                origin: origins.S3BucketOrigin.withOriginAccessIdentity(siteBucket, { originAccessIdentity: oai }),
                 viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
                 compress: true,
