@@ -28,11 +28,16 @@ jobs:
         working-directory: ./packages/backend
         run: |
           npm install
-          npm run build
-
       - name: Install Frontend Dependencies
         working-directory: ./packages/frontend
         run: npm ci
+
+      - name: Install Dependencies (Root)
+        run: npm install
+
+      - name: Build Backend
+        working-directory: ./packages/backend
+        run: npm run build
 
       - name: Build Frontend (Verification)
         working-directory: ./packages/frontend
@@ -41,9 +46,10 @@ jobs:
       # - name: Install AWS CDK (Removed to use local npx cdk)
       #   run: npm install -g aws-cdk
 
-      - name: Debug Dependencies
-        working-directory: ./packages/backend
-        run: npm list --depth=0 || true
+      - name: Debug Root Dependencies
+        run: |
+          ls -la node_modules/.bin/
+          ls -F node_modules/
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -56,13 +62,10 @@ jobs:
       - name: Deploy DEV Stack
         if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/develop')
         working-directory: ./packages/backend
-        run: |
-          echo "DEBUG: Listing .bin directory"
-          ls -la node_modules/.bin/ || echo "node_modules/.bin not found"
-          npx aws-cdk deploy --all --require-approval never -c stage=dev
+        run: ../../node_modules/.bin/cdk deploy --all --require-approval never -c stage=dev
 
       # Deploy Prod Environment (On Merge to Main)
       - name: Deploy PROD Stack
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         working-directory: ./packages/backend
-        run: cdk deploy --all --require-approval never -c stage=prod
+        run: ../../node_modules/.bin/cdk deploy --all --require-approval never -c stage=prod
