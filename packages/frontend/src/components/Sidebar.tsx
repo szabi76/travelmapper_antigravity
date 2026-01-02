@@ -11,6 +11,7 @@ const Sidebar = () => {
     const [discoveries, setDiscoveries] = useState<any[]>([]);
     const { clearGraph, addNodes } = useGraphStore();
     const { setSessionId, sessionId } = useSessionStore();
+    const { addLog } = useLogStore();
 
     useEffect(() => {
         fetchHistory();
@@ -20,13 +21,16 @@ const Sidebar = () => {
         try {
             const list = await listDiscoveries();
             setDiscoveries(list);
+            addLog(`Loaded ${list.length} past trips`, 'info');
         } catch (e) {
             console.error('Failed to load history', e);
+            addLog(`Failed to load history: ${String(e)}`, 'error');
         }
     };
 
     const loadSession = async (discovery: any) => {
         setLoading(true);
+        addLog(`Loading session: ${discovery.title || discovery.prompt}...`, 'info');
         try {
             clearGraph();
             setSessionId(discovery.id);
@@ -46,8 +50,10 @@ const Sidebar = () => {
             };
 
             addNodes([appNode]);
+            addLog(`Session loaded: ${rootNode.title}`, 'success');
         } catch (e) {
             console.error('Failed to load session', e);
+            addLog(`Failed to load session: ${String(e)}`, 'error');
         } finally {
             setLoading(false);
         }
@@ -58,14 +64,21 @@ const Sidebar = () => {
         if (!prompt.trim()) return;
 
         setLoading(true);
+        addLog(`Starting new journey: ${prompt}`, 'info');
+
         try {
             const discovery = await createDiscovery(prompt);
+            addLog('Discovery created. Fetching details...', 'success');
+
             await fetchHistory(); // Refresh list
             await loadSession(discovery); // Use same logic to load the new session
             setPrompt('');
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert('Failed to create discovery');
+            // Extract detailed error message if possible
+            const msg = error.response?.data?.message || error.message || String(error);
+            addLog(`Failed to create discovery: ${msg}`, 'error');
+            alert(`Failed: ${msg}`);
         } finally {
             setLoading(false);
         }
