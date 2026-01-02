@@ -3,6 +3,7 @@ import { ddbDocClient } from '../utils/ddb';
 import { GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
 import * as crypto from 'crypto';
 import { Node, NodeCategory, NodeType } from '../types';
+import { AIPrompts } from '../config/prompts';
 
 const bedrock = new BedrockRuntimeClient({ region: process.env.AWS_REGION });
 const AI_CACHE_TABLE = process.env.AI_CACHE_TABLE!;
@@ -16,24 +17,7 @@ export class AIService {
 
     async enrichNode(title: string, category: string): Promise<any> {
         console.log(`Enriching node: ${title}`);
-        const prompt = `
-            You are a travel expert.
-            The user wants to start a journey or explore: "${title}" (${category}).
-
-            Provide a rich, inspiring description for this starting point.
-            Also suggest a refined title and category if appropriate.
-
-            Output JSON only:
-            {
-                "title": "Refined Title",
-                "category": "Refined Category",
-                "content": {
-                    "description": "Inspiring description...",
-                    "bestTimeVisit": "...",
-                    "tags": ["tag1", "tag2"]
-                }
-            }
-        `;
+        const prompt = AIPrompts.ENRICH_NODE(title, category);
 
         try {
             return await this.invokeBedrock(prompt);
@@ -82,7 +66,12 @@ export class AIService {
 
         // 2. Generate
         console.log('Cache miss. Generating children...');
-        const prompt = this.constructPrompt(parentNode, discoveryPrompt);
+        const prompt = AIPrompts.GENERATE_CHILDREN(
+            parentNode.title,
+            parentNode.category,
+            JSON.stringify(parentNode.content),
+            discoveryPrompt
+        );
 
         const response = await this.invokeBedrock(prompt);
 
@@ -104,28 +93,7 @@ export class AIService {
         return response;
     }
 
-    private constructPrompt(parentNode: Node, userPrompt: string): string {
-        return `
-      You are a travel expert.
-      User Journey: ${userPrompt}
-      Current Location/Context: ${parentNode.title} (${parentNode.category})
-      Description: ${JSON.stringify(parentNode.content)}
-
-      Generate 3 to 5 child nodes connected to this current node.
-      Mix of categories: Destination, Activity, Accommodation, Food, Culture.
-      
-      Output JSON array format only:
-      [
-        {
-          "title": "Title",
-          "category": "Category",
-          "type": "template",
-          "content": { ...specific fields... }
-        }
-      ]
-      Ensure valid JSON. Do not include markdown code blocks.
-    `;
-    }
+    // constructPrompt removed in favor of AIPrompts.GENERATE_CHILDREN usage inline
 
     private async invokeBedrock(prompt: string): Promise<any> {
         const payload = {

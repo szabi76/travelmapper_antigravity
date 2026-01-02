@@ -15,6 +15,11 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// Helper to strip internal prefixes (NODE#, DISCOVERY#) to avoid URL encoding issues with '#'
+const cleanId = (id: string) => {
+    return id.replace(/^(NODE|DISCOVERY)#/, '');
+}
+
 export interface CreateDiscoveryRequest {
     prompt: string;
 }
@@ -25,17 +30,18 @@ export const createDiscovery = async (prompt: string) => {
 };
 
 export const getDiscovery = async (id: string) => {
-    const response = await api.get(`/discoveries/${encodeURIComponent(id)}`);
+    // Backend handles adding prefix if missing
+    const response = await api.get(`/discoveries/${cleanId(id)}`);
     return response.data;
 };
 
 export const getNode = async (id: string) => {
-    const response = await api.get(`/nodes/${encodeURIComponent(id)}`);
+    const response = await api.get(`/nodes/${cleanId(id)}`);
     return response.data;
 };
 
 export const getNodeChildren = async (id: string) => {
-    const response = await api.get(`/nodes/${encodeURIComponent(id)}/children`);
+    const response = await api.get(`/nodes/${cleanId(id)}/children`);
     return response.data;
 };
 
