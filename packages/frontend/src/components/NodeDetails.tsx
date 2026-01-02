@@ -1,6 +1,4 @@
 import { useGraphStore } from '../lib/store';
-import clsx from 'clsx';
-import { XMarkIcon } from '@heroicons/react/24/outline'; // Need to check if heroicons installed, otherwise use char
 
 export default function NodeDetails() {
     const { selectedNode, setSelectedNode } = useGraphStore();
