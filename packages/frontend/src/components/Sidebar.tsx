@@ -9,7 +9,7 @@ const Sidebar = () => {
     const [loading, setLoading] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
     const [discoveries, setDiscoveries] = useState<any[]>([]);
-    const { clearGraph, addNodes, setNodes } = useGraphStore();
+    const { clearGraph, addNodes } = useGraphStore();
     const { setSessionId, sessionId } = useSessionStore();
 
     useEffect(() => {
