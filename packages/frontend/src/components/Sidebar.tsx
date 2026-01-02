@@ -1,15 +1,57 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import clsx from 'clsx';
-import { createDiscovery } from '../lib/api';
+import { createDiscovery, listDiscoveries, getNode } from '../lib/api';
 import { useGraphStore, useSessionStore } from '../lib/store';
 
 const Sidebar = () => {
     const [prompt, setPrompt] = useState('');
     const [loading, setLoading] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
-    const { clearGraph } = useGraphStore();
+    const [discoveries, setDiscoveries] = useState<any[]>([]);
+    const { clearGraph, addNodes, setNodes } = useGraphStore();
     const { setSessionId, sessionId } = useSessionStore();
+
+    useEffect(() => {
+        fetchHistory();
+    }, []);
+
+    const fetchHistory = async () => {
+        try {
+            const list = await listDiscoveries();
+            setDiscoveries(list);
+        } catch (e) {
+            console.error('Failed to load history', e);
+        }
+    };
+
+    const loadSession = async (discovery: any) => {
+        setLoading(true);
+        try {
+            clearGraph();
+            setSessionId(discovery.id);
+
+            // Load Root Node
+            const rootNode = await getNode(discovery.rootNodeId);
+
+            // Format for ReactFlow
+            const appNode = {
+                id: rootNode.id,
+                type: rootNode.type || 'template',
+                position: { x: 0, y: 0 }, // Center
+                data: {
+                    ...rootNode,
+                    label: rootNode.title
+                }
+            };
+
+            addNodes([appNode]);
+        } catch (e) {
+            console.error('Failed to load session', e);
+        } finally {
+            setLoading(false);
+        }
+    }
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -18,29 +60,20 @@ const Sidebar = () => {
         setLoading(true);
         try {
             const discovery = await createDiscovery(prompt);
-            clearGraph();
-            setSessionId(discovery.id);
-
-            // Fetch root node? 
-            // Usually discovery returns metadata. We need to fetch Root Node.
-            // But my API createDiscovery returns discovery object which has rootNodeId.
-            // I need to fetch the root node.
-
-            // Actually, backend createDiscovery returns discovery with rootNodeId.
-            // I should fetch root node.
-            // Import getNode from api.
+            await fetchHistory(); // Refresh list
+            await loadSession(discovery); // Use same logic to load the new session
+            setPrompt('');
         } catch (error) {
             console.error(error);
             alert('Failed to create discovery');
         } finally {
             setLoading(false);
-            setPrompt('');
         }
     };
 
     return (
         <div className={clsx(
-            "flex flex-col border-r bg-white transition-all duration-300 shadow-xl",
+            "flex flex-col border-r bg-white transition-all duration-300 shadow-xl z-10",
             collapsed ? "w-16" : "w-80"
         )}>
             <div className="flex h-16 items-center justify-between px-4 border-b">
@@ -73,9 +106,28 @@ const Sidebar = () => {
                         </div>
 
                         <div>
-                            <h2 className="text-sm font-semibold text-gray-900 mb-2">Current Session</h2>
-                            <div className="text-xs text-gray-500">
-                                {sessionId ? `ID: ${sessionId.substring(0, 15)}...` : 'No active session'}
+                            <h2 className="text-sm font-semibold text-gray-900 mb-3">My Trips 🌍</h2>
+                            <div className="space-y-2">
+                                {discoveries.length === 0 && (
+                                    <p className="text-xs text-gray-400 italic">No trips yet.</p>
+                                )}
+                                {discoveries.map((d) => (
+                                    <button
+                                        key={d.id}
+                                        onClick={() => loadSession(d)}
+                                        className={clsx(
+                                            "w-full text-left p-3 rounded-lg text-sm transition-colors border",
+                                            sessionId === d.id
+                                                ? "bg-indigo-100 border-indigo-200 text-indigo-900"
+                                                : "bg-white border-gray-100 text-gray-700 hover:bg-gray-50 hover:border-gray-200"
+                                        )}
+                                    >
+                                        <div className="font-medium truncate">{d.prompt}</div>
+                                        <div className="text-xs text-gray-400 mt-1">
+                                            {new Date(d.createdAt).toLocaleDateString()}
+                                        </div>
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     </div>

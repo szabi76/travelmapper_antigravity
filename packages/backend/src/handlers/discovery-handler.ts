@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { ddbDocClient } from '../utils/ddb';
-import { PutCommand, QueryCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
+import { PutCommand, QueryCommand, GetCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
 import { Discovery, Node } from '../types';
 
@@ -101,11 +101,30 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
             // Or maybe client stores IDs and requests them individually?
             // "GET /discoveries: Lists all discovery sessions for the current user."
 
-            return {
-                statusCode: 200,
-                headers,
-                body: JSON.stringify([])
-            };
+            try {
+                // Scan for all Discoveries (SK = METADATA)
+                // For MVP, Scan is acceptable. For production, GSI by UserID is better.
+                const result = await ddbDocClient.send(new ScanCommand({
+                    TableName: DISCOVERIES_TABLE,
+                    FilterExpression: 'SK = :sk',
+                    ExpressionAttributeValues: {
+                        ':sk': 'METADATA'
+                    }
+                }));
+
+                const items = (result.Items || []) as Discovery[];
+                // Sort by createdAt desc
+                items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+                return {
+                    statusCode: 200,
+                    headers,
+                    body: JSON.stringify(items)
+                };
+            } catch (e) {
+                console.error('Failed to scan', e);
+                return { statusCode: 500, headers, body: JSON.stringify({ message: 'Failed to list discoveries' }) };
+            }
         }
 
         if (method === 'GET' && path === '/discoveries/{id}') {

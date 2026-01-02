@@ -39,4 +39,9 @@ export const getNodeChildren = async (id: string) => {
     return response.data;
 };
 
+export const listDiscoveries = async () => {
+    const response = await api.get('/discoveries');
+    return response.data;
+};
+
 export default api;
