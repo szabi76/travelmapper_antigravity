@@ -6,12 +6,46 @@ import { Node, NodeCategory, NodeType } from '../types';
 
 const bedrock = new BedrockRuntimeClient({ region: process.env.AWS_REGION });
 const AI_CACHE_TABLE = process.env.AI_CACHE_TABLE!;
-const MODEL_ID = 'anthropic.claude-3-sonnet-20240229-v1:0';
+const MODEL_ID = 'anthropic.claude-sonnet-4-5-20250929-v1:0';
 
 export class AIService {
 
     private computeHash(context: any): string {
         return crypto.createHash('md5').update(JSON.stringify(context)).digest('hex');
+    }
+
+    async enrichNode(title: string, category: string): Promise<any> {
+        console.log(`Enriching node: ${title}`);
+        const prompt = `
+            You are a travel expert.
+            The user wants to start a journey or explore: "${title}" (${category}).
+
+            Provide a rich, inspiring description for this starting point.
+            Also suggest a refined title and category if appropriate.
+
+            Output JSON only:
+            {
+                "title": "Refined Title",
+                "category": "Refined Category",
+                "content": {
+                    "description": "Inspiring description...",
+                    "bestTimeVisit": "...",
+                    "tags": ["tag1", "tag2"]
+                }
+            }
+        `;
+
+        try {
+            return await this.invokeBedrock(prompt);
+        } catch (e) {
+            console.error('Enrichment failed', e);
+            // Fallback
+            return {
+                title: title,
+                category: category,
+                content: { description: `Explore ${title}` }
+            };
+        }
     }
 
     async generateChildren(
