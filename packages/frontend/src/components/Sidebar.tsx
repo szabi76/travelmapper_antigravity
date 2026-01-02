@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import { createDiscovery, listDiscoveries, getNode } from '../lib/api';
-import { useGraphStore, useSessionStore } from '../lib/store';
+import { useGraphStore, useSessionStore, useLogStore } from '../lib/store';
 
 const Sidebar = () => {
     const [prompt, setPrompt] = useState('');
