@@ -52,3 +52,17 @@ export const useSessionStore = create<SessionState>((set) => ({
     setSessionId: (id) => set({ sessionId: id }),
     addToHistory: (nodeId) => set((state) => ({ history: [...state.history, nodeId] })),
 }));
+
+interface LogState {
+    logs: { id: string; message: string; type: 'info' | 'error' | 'success'; timestamp: number }[];
+    addLog: (message: string, type?: 'info' | 'error' | 'success') => void;
+    clearLogs: () => void;
+}
+
+export const useLogStore = create<LogState>((set) => ({
+    logs: [],
+    addLog: (message, type = 'info') => set((state) => ({
+        logs: [{ id: Math.random().toString(36).substring(7), message, type, timestamp: Date.now() }, ...state.logs]
+    })),
+    clearLogs: () => set({ logs: [] }),
+}));
