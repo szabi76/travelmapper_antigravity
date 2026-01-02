@@ -1,0 +1,59 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Install Backend Dependencies
+        working-directory: ./packages/backend
+        run: npm ci
+
+      - name: Install Frontend Dependencies
+        working-directory: ./packages/frontend
+        run: npm ci
+
+      - name: Build Frontend (Verification)
+        working-directory: ./packages/frontend
+        run: npm run build
+
+      - name: Install AWS CDK
+        run: npm install -g aws-cdk
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      # Deploy Dev Environment (On Pull Request OR Push to Develop)
+      - name: Deploy DEV Stack
+        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/develop')
+        working-directory: ./packages/backend
+        run: cdk deploy --all --require-approval never -c stage=dev
+
+      # Deploy Prod Environment (On Merge to Main)
+      - name: Deploy PROD Stack
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        working-directory: ./packages/backend
+        run: cdk deploy --all --require-approval never -c stage=prod
