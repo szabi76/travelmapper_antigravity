@@ -5,6 +5,8 @@ import Sidebar from './components/Sidebar';
 import { useGraphStore } from './lib/store';
 import { getNodeChildren } from './lib/api';
 
+import LoginModal from './components/LoginModal';
+
 function App() {
   const { addNodes, addEdges, nodes } = useGraphStore();
 
@@ -65,6 +67,7 @@ function App() {
 
   return (
     <div className="flex h-screen w-screen bg-gray-50 overflow-hidden font-sans text-gray-900">
+      <LoginModal />
       <Sidebar />
       <div className="flex-1 relative">
         <GraphCanvas onNodeClick={handleNodeClick} />
