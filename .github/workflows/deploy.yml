@@ -64,7 +64,34 @@ jobs:
         working-directory: ./packages/backend
         run: |
           ../../node_modules/.bin/cdk bootstrap --require-approval never -c stage=dev
-          ../../node_modules/.bin/cdk deploy --all --require-approval never -c stage=dev
+          ../../node_modules/.bin/cdk deploy --all --require-approval never -c stage=dev --outputs-file ./cdk-outputs.json
+          
+          # Extract Outputs
+          echo "Extracting Outputs..."
+          API_URL=$(jq -r '."Dev-TravelDiscoveryApiStack".TravelDiscoveryApiEndpoint*' ./cdk-outputs.json)
+          BUCKET_NAME=$(jq -r '."Dev-TravelDiscoveryFrontendStack".FrontendBucketName' ./cdk-outputs.json)
+          DISTRIBUTION_ID=$(jq -r '."Dev-TravelDiscoveryFrontendStack".FrontendDistributionId' ./cdk-outputs.json)
+          
+          echo "API_URL=$API_URL" >> $GITHUB_ENV
+          echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
+          echo "DISTRIBUTION_ID=$DISTRIBUTION_ID" >> $GITHUB_ENV
+          
+          echo "API URL: $API_URL"
+          echo "Bucket: $BUCKET_NAME"
+
+      - name: Build and Deploy Frontend (DEV)
+        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/develop')
+        working-directory: ./packages/frontend
+        run: |
+          # Build with the dynamic API URL
+          export VITE_API_URL=${{ env.API_URL }}
+          npm run build
+          
+          # Sync to S3
+          aws s3 sync dist/ s3://${{ env.BUCKET_NAME }} --delete
+          
+          # Invalidate CloudFront
+          aws cloudfront create-invalidation --distribution-id ${{ env.DISTRIBUTION_ID }} --paths "/*"
 
       # Deploy Prod Environment (On Merge to Main)
       - name: Deploy PROD Stack

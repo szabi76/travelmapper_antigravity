@@ -1,7 +1,5 @@
 #!/usr/bin/env node
-import * as cdk from 'aws-cdk-lib';
-import { DatabaseStack } from '../lib/database-stack';
-import { ApiStack } from '../lib/api-stack';
+import { FrontendStack } from '../lib/frontend-stack';
 
 
 const app = new cdk.App();
@@ -12,10 +10,12 @@ const prefix = capitalize(stage);
 
 const databaseStack = new DatabaseStack(app, `${prefix}-TravelDiscoveryDatabaseStack`, {});
 
-new ApiStack(app, `${prefix}-TravelDiscoveryApiStack`, {
+const apiStack = new ApiStack(app, `${prefix}-TravelDiscoveryApiStack`, {
   discoveriesTable: databaseStack.discoveriesTable,
   nodesTable: databaseStack.nodesTable,
   sessionsTable: databaseStack.sessionsTable,
   aiCacheTable: databaseStack.aiCacheTable,
 });
+
+new FrontendStack(app, `${prefix}-TravelDiscoveryFrontendStack`, {});
 
