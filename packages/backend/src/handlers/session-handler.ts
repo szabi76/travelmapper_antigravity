@@ -8,7 +8,7 @@ const SESSIONS_TABLE = process.env.SESSIONS_TABLE!;
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const method = event.httpMethod;
     const idParameter = event.pathParameters?.id;
-    const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+    const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN || '*' };
 
     try {
         if (!idParameter) {

@@ -11,6 +11,7 @@ interface ApiStackProps extends cdk.StackProps {
     nodesTable: dynamodb.Table;
     sessionsTable: dynamodb.Table;
     aiCacheTable: dynamodb.Table;
+    allowedOrigin: string;
 }
 
 export class ApiStack extends cdk.Stack {
@@ -23,6 +24,7 @@ export class ApiStack extends cdk.Stack {
             NODES_TABLE: props.nodesTable.tableName,
             SESSIONS_TABLE: props.sessionsTable.tableName,
             AI_CACHE_TABLE: props.aiCacheTable.tableName,
+            ALLOWED_ORIGIN: props.allowedOrigin,
         };
 
         // Discovery Handler
@@ -66,7 +68,7 @@ export class ApiStack extends cdk.Stack {
         const api = new apigateway.RestApi(this, 'TravelDiscoveryApi', {
             restApiName: 'Travel Discovery Service',
             defaultCorsPreflightOptions: {
-                allowOrigins: apigateway.Cors.ALL_ORIGINS,
+                allowOrigins: [props.allowedOrigin, 'http://localhost:5173'], // Allow Dev + Prod (Make strict in prod later?)
                 allowMethods: apigateway.Cors.ALL_METHODS,
             },
         });

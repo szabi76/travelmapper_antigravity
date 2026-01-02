@@ -13,12 +13,13 @@ const prefix = capitalize(stage);
 
 const databaseStack = new DatabaseStack(app, `${prefix}-TravelDiscoveryDatabaseStack`, {});
 
+const frontendStack = new FrontendStack(app, `${prefix}-TravelDiscoveryFrontendStack`, {});
+
 const apiStack = new ApiStack(app, `${prefix}-TravelDiscoveryApiStack`, {
   discoveriesTable: databaseStack.discoveriesTable,
   nodesTable: databaseStack.nodesTable,
   sessionsTable: databaseStack.sessionsTable,
   aiCacheTable: databaseStack.aiCacheTable,
+  allowedOrigin: frontendStack.siteUrl,
 });
-
-new FrontendStack(app, `${prefix}-TravelDiscoveryFrontendStack`, {});
 
