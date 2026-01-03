@@ -1,4 +1,3 @@
-```
 import { useEffect } from 'react';
 import GraphCanvas from './components/GraphCanvas';
 import Navbar from './components/Navbar';
@@ -48,7 +47,7 @@ function App() {
       });
 
       const newEdges = children.map((child: any) => ({
-        id: `e - ${ node.id } -${ child.id } `,
+        id: `e-${node.id}-${child.id}`,
         source: node.id,
         target: child.id,
         animated: true,
@@ -76,7 +75,7 @@ function App() {
       <Navbar />
       <div className="flex-1 relative w-full h-full">
         <GraphCanvas onNodeClick={handleNodeClick} />
-        
+
         <NodeDetails />
         <DebugConsole />
 
@@ -94,4 +93,3 @@ function App() {
 }
 
 export default App;
-```
