@@ -51,6 +51,11 @@ const Sidebar = () => {
 
             addNodes([appNode]);
             addLog(`Session loaded: ${rootNode.title}`, 'success');
+
+            // Check for backend-reported AI errors
+            if (rootNode.content?._debugError) {
+                addLog(`AI Warning: ${rootNode.content._debugError}`, 'error');
+            }
         } catch (e) {
             console.error('Failed to load session', e);
             addLog(`Failed to load session: ${String(e)}`, 'error');

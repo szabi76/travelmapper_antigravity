@@ -27,7 +27,8 @@ export class AIService {
             return {
                 title: title,
                 category: category,
-                content: { description: `Explore ${title}` }
+                content: { description: `Explore ${title}` },
+                _debugError: e instanceof Error ? e.message : String(e)
             };
         }
     }

@@ -3,6 +3,7 @@ import { ddbDocClient } from '../utils/ddb';
 import { PutCommand, QueryCommand, GetCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
 import { Discovery, Node } from '../types';
+import { AIService } from '../services/ai-service';
 
 const DISCOVERIES_TABLE = process.env.DISCOVERIES_TABLE!;
 const NODES_TABLE = process.env.NODES_TABLE!;
@@ -55,15 +56,30 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
                 }
             }));
 
-            // Create Root Node (Virtual/Placeholder based on prompt)
-            // Ideally, we might ask AI to flesh out the root node too, but for now we make a simple one.
+            // Create Root Node (Rich Content via AI)
+            const aiService = new AIService(); // Instantiate service
+            let enrichedData;
+            try {
+                enrichedData = await aiService.enrichNode(prompt, 'Destination');
+            } catch (e) {
+                console.error('Enrichment failed, using defaults', e);
+                enrichedData = {
+                    title: prompt,
+                    category: 'Destination',
+                    content: { description: `Root node for: ${prompt}` }
+                };
+            }
+
             const rootNode: Node = {
                 id: rootNodeId,
                 discoveryId,
                 type: 'template',
-                category: 'Destination', // Defaulting to Destination for root
-                title: prompt, // Using prompt as title initially
-                content: { description: `Root node for: ${prompt}` },
+                category: enrichedData.category || 'Destination',
+                title: enrichedData.title || prompt,
+                content: {
+                    ...(enrichedData.content || { description: `Root node for: ${prompt}` }),
+                    _debugError: enrichedData._debugError
+                },
                 childrenLoaded: false,
                 createdAt: now
             };
