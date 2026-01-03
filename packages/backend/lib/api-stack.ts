@@ -70,7 +70,10 @@ export class ApiStack extends cdk.Stack {
         // Grant Bedrock Access for AI
         const bedrockPolicy = new iam.PolicyStatement({
             actions: ['bedrock:InvokeModel'],
-            resources: ['*'], // Or restrict to specific model ARN
+            resources: [
+                '*',                                                                        // Fallback/Broad access
+                'arn:aws:bedrock:::foundation-model/anthropic.claude-sonnet-4-5-20250929-v1:0', // Global FM (No Region/Account)
+            ],
         });
         discoveryHandler.addToRolePolicy(bedrockPolicy);
         nodeHandler.addToRolePolicy(bedrockPolicy);
