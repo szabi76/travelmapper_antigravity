@@ -50,7 +50,13 @@ const Sidebar = () => {
             };
 
             addNodes([appNode]);
-            setSelectedNode(appNode);
+
+            // Small delay to allow graph to render before selection
+            setTimeout(() => {
+                console.log('Selecting root node:', appNode.data.title);
+                setSelectedNode(appNode);
+            }, 100);
+
             addLog(`Session loaded: ${rootNode.title}`, 'success');
 
             // Check for backend-reported AI errors
