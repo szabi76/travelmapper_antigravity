@@ -4,25 +4,14 @@ import { GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
 import * as crypto from 'crypto';
 import { Node, NodeCategory, NodeType } from '../types';
 import { AIPrompts } from '../config/prompts';
+import { GeoService } from './geo-service';
 
 const bedrock = new BedrockRuntimeClient({ region: process.env.AWS_REGION });
 const AI_CACHE_TABLE = process.env.AI_CACHE_TABLE!;
 const MODEL_ID = 'global.anthropic.claude-sonnet-4-5-20250929-v1:0';
-
-export class AIService {
-
-    private computeHash(context: any): string {
-        return crypto.createHash('md5').update(JSON.stringify(context)).digest('hex');
-    }
-
-import { GeoService } from './geo-service';
-
-// ... imports
-
 const geoService = new GeoService();
 
 export class AIService {
-    // ...
 
     async enrichNode(title: string, category: string): Promise<any> {
         console.log(`Enriching node: ${title}`);
