@@ -64,7 +64,7 @@ jobs:
         working-directory: ./packages/backend
         run: |
           ../../node_modules/.bin/cdk bootstrap --require-approval never -c stage=dev
-          API_SECRET_TOKEN=${{ secrets.API_SECRET_TOKEN }} ../../node_modules/.bin/cdk deploy --all --require-approval never -c stage=dev --outputs-file ./cdk-outputs.json
+          MAPBOX_ACCESS_TOKEN=${{ secrets.MAPBOX_ACCESS_TOKEN }} API_SECRET_TOKEN=${{ secrets.API_SECRET_TOKEN }} ../../node_modules/.bin/cdk deploy --all --require-approval never -c stage=dev --outputs-file ./cdk-outputs.json
           
           # Extract Outputs
           echo "Extracting Outputs..."
