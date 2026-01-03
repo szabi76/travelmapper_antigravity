@@ -13,6 +13,10 @@ const geoService = new GeoService();
 
 export class AIService {
 
+    private computeHash(context: any): string {
+        return crypto.createHash('md5').update(JSON.stringify(context)).digest('hex');
+    }
+
     async enrichNode(title: string, category: string): Promise<any> {
         console.log(`Enriching node: ${title}`);
 
