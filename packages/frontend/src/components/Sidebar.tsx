@@ -9,7 +9,7 @@ const Sidebar = () => {
     const [loading, setLoading] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
     const [discoveries, setDiscoveries] = useState<any[]>([]);
-    const { clearGraph, addNodes } = useGraphStore();
+    const { clearGraph, addNodes, setSelectedNode } = useGraphStore();
     const { setSessionId, sessionId } = useSessionStore();
     const { addLog } = useLogStore();
 
@@ -50,6 +50,7 @@ const Sidebar = () => {
             };
 
             addNodes([appNode]);
+            setSelectedNode(appNode);
             addLog(`Session loaded: ${rootNode.title}`, 'success');
 
             // Check for backend-reported AI errors
