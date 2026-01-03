@@ -50,4 +50,9 @@ export const listDiscoveries = async () => {
     return response.data;
 };
 
+export const enrichNode = async (id: string) => {
+    const response = await api.post(`/nodes/${cleanId(id)}/enrich`);
+    return response.data;
+};
+
 export default api;
