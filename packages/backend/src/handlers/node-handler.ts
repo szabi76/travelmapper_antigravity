@@ -115,6 +115,43 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
             return { statusCode: 200, headers, body: JSON.stringify(newNodes) };
         }
 
+        if (method === 'POST' && path.endsWith('/enrich')) {
+            console.log('Enriching node content...');
+
+            // Call AI
+            let enrichedData;
+            try {
+                enrichedData = await aiService.enrichNode(node.title, node.category);
+            } catch (e: any) {
+                console.error('Enrichment failed', e);
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({ message: 'Enrichment failed', error: e.message })
+                };
+            }
+
+            // Update DB
+            const updatedContent = {
+                ...(enrichedData.content || {}),
+                _debugError: enrichedData._debugError // Pass error if any
+            };
+
+            await ddbDocClient.send(new UpdateCommand({
+                TableName: NODES_TABLE,
+                Key: { PK: node.id, SK: 'METADATA' },
+                UpdateExpression: 'set content = :c',
+                ExpressionAttributeValues: { ':c': updatedContent }
+            }));
+
+            // Return updated node
+            return {
+                statusCode: 200,
+                headers,
+                body: JSON.stringify({ ...node, content: updatedContent })
+            };
+        }
+
         return { statusCode: 404, headers, body: JSON.stringify({ message: 'Not Found' }) };
 
     } catch (error) {

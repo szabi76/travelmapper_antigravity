@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import clsx from 'clsx';
-import { createDiscovery, listDiscoveries, getNode } from '../lib/api';
+import { createDiscovery, listDiscoveries, getNode, enrichNode } from '../lib/api';
 import { useGraphStore, useSessionStore, useLogStore } from '../lib/store';
 
 const Sidebar = () => {
@@ -36,7 +36,24 @@ const Sidebar = () => {
             setSessionId(discovery.id);
 
             // Load Root Node
-            const rootNode = await getNode(discovery.rootNodeId);
+            let rootNode = await getNode(discovery.rootNodeId);
+
+            // Self-Healing: Check if node has legacy/fallback content and enrich it
+            const isFallback = !rootNode.content?.description ||
+                rootNode.content.description.startsWith('Root node for:') ||
+                rootNode.content.description.startsWith('Explore ');
+
+            if (isFallback) {
+                addLog('Enriching legacy content...', 'info');
+                try {
+                    const richNode = await enrichNode(rootNode.id);
+                    rootNode = richNode; // Use new data
+                    addLog('Content enriched successfully!', 'success');
+                } catch (err) {
+                    console.error('Auto-enrichment failed', err);
+                    addLog('Failed to enrich legacy content', 'error');
+                }
+            }
 
             // Format for ReactFlow
             const appNode = {

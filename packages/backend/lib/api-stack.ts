@@ -102,6 +102,9 @@ export class ApiStack extends cdk.Stack {
         const nodeChildren = node.addResource('children');
         nodeChildren.addMethod('GET', new apigateway.LambdaIntegration(nodeHandler));
 
+        const nodeEnrich = node.addResource('enrich');
+        nodeEnrich.addMethod('POST', new apigateway.LambdaIntegration(nodeHandler));
+
         const sessions = api.root.addResource('sessions');
         const session = sessions.addResource('{id}');
         session.addMethod('GET', new apigateway.LambdaIntegration(sessionHandler));
