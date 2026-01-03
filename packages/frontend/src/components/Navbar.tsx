@@ -53,6 +53,7 @@ const Navbar = () => {
 
             // Self-Healing
             const isFallback = !rootNode.content?.description ||
+                !rootNode.content.location || // Missing location data
                 rootNode.content.description.startsWith('Root node for:') ||
                 rootNode.content.description.startsWith('Explore ');
 
