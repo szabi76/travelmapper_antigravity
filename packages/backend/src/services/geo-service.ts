@@ -20,7 +20,7 @@ export class GeoService {
             // 1. Geocoding
             const geoUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&limit=1`;
             const geoRes = await fetch(geoUrl);
-            const geoData = await geoRes.json();
+            const geoData = await geoRes.json() as any;
 
             if (!geoData.features || geoData.features.length === 0) {
                 console.log(`No location found for: ${query}`);
@@ -35,7 +35,7 @@ export class GeoService {
             // querying mapbox.mapbox-terrain-v2
             const eleUrl = `https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/${lng},${lat}.json?layers=contour&limit=50&access_token=${MAPBOX_TOKEN}`;
             const eleRes = await fetch(eleUrl);
-            const eleData = await eleRes.json();
+            const eleData = await eleRes.json() as any;
 
             let altitude = 0;
             if (eleData.features && eleData.features.length > 0) {
