@@ -1,7 +1,7 @@
-
+```
 import { useEffect } from 'react';
 import GraphCanvas from './components/GraphCanvas';
-import Sidebar from './components/Sidebar';
+import Navbar from './components/Navbar';
 import { useGraphStore } from './lib/store';
 import { getNodeChildren } from './lib/api';
 
@@ -29,7 +29,7 @@ function App() {
       // Basic naive layout: random position around parent.
 
       const parentPos = node.position;
-      const radius = 300;
+      const radius = 300; // Increased radius for better spread
 
       const newNodes = children.map((child: any, index: number) => {
         const angle = (index / children.length) * 2 * Math.PI;
@@ -48,7 +48,7 @@ function App() {
       });
 
       const newEdges = children.map((child: any) => ({
-        id: `e-${node.id}-${child.id}`,
+        id: `e - ${ node.id } -${ child.id } `,
         source: node.id,
         target: child.id,
         animated: true,
@@ -71,26 +71,27 @@ function App() {
   }, []);
 
   return (
-    <div className="flex h-screen w-screen bg-gray-50 overflow-hidden font-sans text-gray-900">
+    <div className="flex flex-col h-screen w-screen bg-gray-50 overflow-hidden font-sans text-gray-900">
       <LoginModal />
-      <Sidebar />
-      <div className="flex-1 relative">
+      <Navbar />
+      <div className="flex-1 relative w-full h-full">
         <GraphCanvas onNodeClick={handleNodeClick} />
-
+        
         <NodeDetails />
+        <DebugConsole />
 
         {nodes.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="text-center p-8 max-w-md bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Ready to Explore?</h2>
-              <p className="text-gray-600">Enter a prompt in the sidebar to start your travel discovery journey.</p>
+              <p className="text-gray-600">Use the search bar above to start your journey.</p>
             </div>
           </div>
         )}
       </div>
-      <DebugConsole />
     </div>
   );
 }
 
 export default App;
+```
