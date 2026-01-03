@@ -15,22 +15,43 @@ export class AIService {
         return crypto.createHash('md5').update(JSON.stringify(context)).digest('hex');
     }
 
+import { GeoService } from './geo-service';
+
+// ... imports
+
+const geoService = new GeoService();
+
+export class AIService {
+    // ...
+
     async enrichNode(title: string, category: string): Promise<any> {
         console.log(`Enriching node: ${title}`);
-        const prompt = AIPrompts.ENRICH_NODE(title, category);
 
-        try {
-            return await this.invokeBedrock(prompt);
-        } catch (e) {
-            console.error('Enrichment failed', e);
-            // Fallback
-            return {
-                title: title,
-                category: category,
-                content: { description: `Explore ${title}` },
-                _debugError: e instanceof Error ? e.message : String(e)
+        // Parallelize AI and Geo
+        const prompt = AIPrompts.ENRICH_NODE(title, category);
+        const aiPromise = this.invokeBedrock(prompt).catch(e => ({
+            title, category, content: { description: `Explore ${title}` }, _debugError: String(e)
+        }));
+
+        const geoPromise = geoService.getLocationData(title).catch(e => null);
+
+        const [aiResult, geoResult] = await Promise.all([aiPromise, geoPromise]);
+
+        // Merge
+        const content = aiResult.content || {};
+        if (geoResult) {
+            content.location = {
+                lat: geoResult.latitude,
+                lng: geoResult.longitude,
+                alt: geoResult.altitude,
+                address: geoResult.placeName
             };
         }
+
+        return {
+            ...aiResult,
+            content
+        };
     }
 
     async generateChildren(

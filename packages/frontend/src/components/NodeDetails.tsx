@@ -40,6 +40,23 @@ export default function NodeDetails() {
                     </p>
                 </div>
 
+                {/* Location Info */}
+                {safeContent.location && (
+                    <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
+                        <h4 className="text-xs font-bold text-emerald-800 uppercase mb-1">📍 Location Info</h4>
+                        <div className="text-sm text-emerald-900 space-y-1">
+                            {safeContent.location.address && <p className="font-medium">{safeContent.location.address}</p>}
+                            <div className="flex gap-3 text-xs opacity-80">
+                                <span>Lat: {Number(safeContent.location.lat).toFixed(4)}</span>
+                                <span>Lng: {Number(safeContent.location.lng).toFixed(4)}</span>
+                            </div>
+                            {safeContent.location.alt !== undefined && (
+                                <p className="text-xs font-bold mt-1">Altitude: {safeContent.location.alt}m</p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* Best Time to Visit */}
                 {safeContent.bestTimeVisit && (
                     <div className="bg-amber-50 rounded-lg p-3 border border-amber-100">
