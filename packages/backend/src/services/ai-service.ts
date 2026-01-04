@@ -60,19 +60,30 @@ export class AIService {
             title, category, content: { description: `Explore ${title}` }, _debugError: String(e)
         }));
 
-        const geoPromise = geoService.getLocationData(title).catch(e => null);
-        const photoPromise = photoService.getPhotos(`${title} ${category}`).catch(e => ({ urls: [], error: String(e) }));
+        const geoPromise = geoService.getLocationData(title).catch(e => ({ data: null, debug: { error: String(e) } }));
+        const photoPromise = photoService.getPhotos(`${title} ${category}`).catch(e => ({ urls: [], debug: { error: String(e) }, error: String(e) }));
 
         const [aiResult, geoResult, photoResult] = await Promise.all([aiPromise, geoPromise, photoPromise]);
 
         // Merge
         const content = aiResult.content || {};
-        if (geoResult) {
+
+        // Debug Aggregation
+        content._debug = {
+            photo: photoResult?.debug,
+            geo: geoResult?.debug,
+            env: {
+                photoKey: !!process.env.UNSPLASH_ACCESS_KEY,
+                mapboxToken: !!process.env.MAPBOX_ACCESS_TOKEN
+            }
+        };
+
+        if (geoResult && geoResult.data) {
             content.location = {
-                lat: geoResult.latitude,
-                lng: geoResult.longitude,
-                alt: geoResult.altitude,
-                address: geoResult.placeName
+                lat: geoResult.data.latitude,
+                lng: geoResult.data.longitude,
+                alt: geoResult.data.altitude,
+                address: geoResult.data.placeName
             };
         }
 
@@ -80,7 +91,7 @@ export class AIService {
             content.photos = photoResult.urls;
         }
 
-        // Always attach debug error if present (for diagnosis)
+        // Always attach debug error if present (for diagnosis) - KEEPING BACKWARD COMPAT FOR NOW
         if (photoResult && photoResult.error) {
             content._debugPhotoError = photoResult.error;
             content._debugEnvPhoto = !!process.env.UNSPLASH_ACCESS_KEY;

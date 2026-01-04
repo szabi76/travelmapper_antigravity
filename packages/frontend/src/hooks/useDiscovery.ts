@@ -36,18 +36,25 @@ export const useDiscovery = () => {
 
             // DEBUG: Check for photos
             addLog(`Node loaded. Photos: ${rootNode.content?.photos?.length || 0}`, rootNode.content?.photos?.length ? 'success' : 'error');
-            if (rootNode.content?.photos) {
-                console.log('Photos:', rootNode.content.photos);
+
+            // Unpack Granular Debug Metadata
+            const debug = rootNode.content?._debug;
+            if (debug) {
+                if (debug.env) {
+                    addLog(`🔧 ENV: PhotoKey=${debug.env.photoKey} | MapboxToken=${debug.env.mapboxToken}`, 'info');
+                }
+                if (debug.photo) {
+                    addLog(`📸 PHOTO: Query="${debug.photo.query}" | Status=${debug.photo.status} | Found=${debug.photo.totalFound || 0} | Returned=${debug.photo.returned || 0}`, debug.photo.error ? 'error' : 'info');
+                    if (debug.photo.error) addLog(`📸 PHOTO ERR: ${debug.photo.error}`, 'error');
+                }
+                if (debug.geo) {
+                    addLog(`🌍 GEO: Query="${debug.geo.query}" | Found=${debug.geo.geoFound} | Alt=${debug.geo.altitude}m`, debug.geo.error ? 'error' : 'info');
+                }
             } else {
-                console.log('No photos found in content:', rootNode.content);
-                // Explicitly log the error for the user
+                // Fallback for old API versions
                 if (rootNode.content?._debugPhotoError) {
                     addLog(`PHOTO ERROR: ${rootNode.content._debugPhotoError}`, 'error');
                 }
-                if (rootNode.content?._debugEnvPhoto !== undefined) {
-                    addLog(`Backend Has Key: ${rootNode.content._debugEnvPhoto}`, 'info');
-                }
-                addLog(`Debug keys: ${Object.keys(rootNode.content || {}).join(', ')}`, 'info');
             }
 
             // Self-Healing

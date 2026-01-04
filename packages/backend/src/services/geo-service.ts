@@ -10,10 +10,13 @@ const MAPBOX_TOKEN = process.env.MAPBOX_ACCESS_TOKEN;
 
 export class GeoService {
 
-    async getLocationData(query: string): Promise<LocationData | null> {
+    async getLocationData(query: string): Promise<{ data: LocationData | null, debug: any }> {
+        const debug: any = { query, provider: 'mapbox' };
+
         if (!MAPBOX_TOKEN) {
             console.warn('MAPBOX_ACCESS_TOKEN not set');
-            return null;
+            debug.error = 'MAPBOX_ACCESS_TOKEN not set';
+            return { data: null, debug };
         }
 
         try {
@@ -24,41 +27,43 @@ export class GeoService {
 
             if (!geoData.features || geoData.features.length === 0) {
                 console.log(`No location found for: ${query}`);
-                return null;
+                debug.geoFound = false;
+                return { data: null, debug };
             }
 
             const feature = geoData.features[0];
             const [lng, lat] = feature.center;
             const placeName = feature.place_name;
 
+            debug.geoFound = true;
+            debug.coordinates = [lat, lng];
+            debug.placeName = placeName;
+
             // 2. Altitude (Tilequery)
-            // querying mapbox.mapbox-terrain-v2
             const eleUrl = `https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/${lng},${lat}.json?layers=contour&limit=50&access_token=${MAPBOX_TOKEN}`;
             const eleRes = await fetch(eleUrl);
             const eleData = await eleRes.json() as any;
 
             let altitude = 0;
             if (eleData.features && eleData.features.length > 0) {
-                // Get the elevation from the first feature or average/max
-                // Mapbox tilequery returns features with 'ele' property
-                // We pick the highest confidence or just the first.
-                // Usually returns multiple points in the tile.
-                // Let's take the max elevation found to be safe for "peaks", or average?
-                // For a specific point, they should be close.
-                // tilequery returns features sorted by distance/relevance usually.
                 altitude = eleData.features[0].properties.ele;
             }
+            debug.altitude = altitude;
 
             return {
-                latitude: lat,
-                longitude: lng,
-                altitude,
-                placeName
+                data: {
+                    latitude: lat,
+                    longitude: lng,
+                    altitude,
+                    placeName
+                },
+                debug
             };
 
         } catch (error) {
             console.error('GeoService error:', error);
-            return null;
+            debug.error = String(error);
+            return { data: null, debug };
         }
     }
 }
