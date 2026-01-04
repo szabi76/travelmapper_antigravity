@@ -66,9 +66,17 @@ jobs:
       - name: Deploy DEV Stack
         if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/develop')
         working-directory: ./packages/backend
+        env:
+          MAPBOX_ACCESS_TOKEN: ${{ secrets.MAPBOX_ACCESS_TOKEN }}
+          API_SECRET_TOKEN: ${{ secrets.API_SECRET_TOKEN }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
         run: |
+          echo "Debug Checks:"
+          echo "UNSPLASH_ACCESS_KEY Length: ${#UNSPLASH_ACCESS_KEY}"
+          if [ -z "$UNSPLASH_ACCESS_KEY" ]; then echo "::warning::UNSPLASH_ACCESS_KEY is empty/missing in environment!"; else echo "UNSPLASH_ACCESS_KEY is present."; fi
+
           ../../node_modules/.bin/cdk bootstrap --require-approval never -c stage=dev
-          MAPBOX_ACCESS_TOKEN=${{ secrets.MAPBOX_ACCESS_TOKEN }} API_SECRET_TOKEN=${{ secrets.API_SECRET_TOKEN }} ../../node_modules/.bin/cdk deploy --all --require-approval never -c stage=dev --outputs-file ./cdk-outputs.json
+          ../../node_modules/.bin/cdk deploy --all --require-approval never -c stage=dev --outputs-file ./cdk-outputs.json
           
           # Extract Outputs
           echo "Extracting Outputs..."
