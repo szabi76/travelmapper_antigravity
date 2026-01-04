@@ -5,13 +5,12 @@ import { applyNodeChanges, applyEdgeChanges } from 'reactflow';
 
 // Define basic types here to avoid circular dep if types.ts isn't shared yet
 // Ideally we share types, but monorepo linking might be complex for MVP. Copy-paste or specialized frontend types.
+import type { Node } from '@travelmapper/shared';
+
 export interface AppNode extends ReactFlowNode {
-    data: {
-        title: string;
-        category: string;
-        type: string;
+    data: Node & {
+        label?: string; // ReactFlow checks for label
         onExpand?: () => void;
-        [key: string]: any;
     }
 }
 

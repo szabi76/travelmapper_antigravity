@@ -37,5 +37,42 @@ export const AIPrompts = {
             }
         ]
         Ensure valid JSON. Do not include markdown code blocks.
+    `,
+
+    GENERATE_SECTIONS: (city: string, context?: string) => `
+        You are a seasoned editor for a high-end travel magazine.
+        Create a curated guide for: "${city}"${context ? ` (${context})` : ''}.
+
+        We need 3 distinct collections:
+        1. "Highlights" (Top 4 sights/landmarks)
+        2. "Culinary Scene" (Top 4 dishes or restaurants)
+        3. "Stays" (Top 3 neighborhoods or hotels)
+
+        Output strict JSON:
+        {
+            "sections": [
+                {
+                    "id": "highlights",
+                    "title": "Highlights",
+                    "items": [
+                        { "title": "Name", "type": "Sight", "description": "Short 1-line vibe check." }
+                    ]
+                },
+                {
+                    "id": "food",
+                    "title": "Culinary Scene",
+                    "items": [
+                        { "title": "Name", "type": "Food", "description": "Short 1-line vibe check." }
+                    ]
+                },
+                {
+                    "id": "stays",
+                    "title": "Stays", 
+                    "items": [
+                        { "title": "Name", "type": "Stay", "description": "Short 1-line vibe check." }
+                    ]
+                }
+            ]
+        }
     `
 };

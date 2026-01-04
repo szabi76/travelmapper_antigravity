@@ -59,10 +59,18 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
             // Create Root Node (Rich Content via AI)
             const aiService = new AIService(); // Instantiate service
             let enrichedData;
+            let sectionsData = [];
+
             try {
-                enrichedData = await aiService.enrichNode(prompt, 'Destination', context);
+                // Parallelize Enrichment and Section Generation
+                const [enrichResult, sectionsResult] = await Promise.all([
+                    aiService.enrichNode(prompt, 'Destination', context),
+                    aiService.generateSections(prompt, context)
+                ]);
+                enrichedData = enrichResult;
+                sectionsData = sectionsResult;
             } catch (e) {
-                console.error('Enrichment failed, using defaults', e);
+                console.error('Enrichment/Sections failed, using defaults', e);
                 enrichedData = {
                     title: prompt,
                     category: 'Destination',
@@ -78,6 +86,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
                 title: enrichedData.title || prompt,
                 content: {
                     ...(enrichedData.content || { description: `Root node for: ${prompt}` }),
+                    sections: sectionsData,
                     _debugError: enrichedData._debugError
                 },
                 childrenLoaded: false,

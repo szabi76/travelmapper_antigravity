@@ -166,6 +166,49 @@ export class AIService {
         return response;
     }
 
+    async generateSections(city: string, context?: string): Promise<any> {
+        console.log(`Generating curated sections for: ${city}`);
+        const prompt = AIPrompts.GENERATE_SECTIONS(city, context);
+
+        try {
+            const data = await this.invokeBedrock(prompt);
+            const sections = data.sections || [];
+
+            // Parallel Enrich with Photos/Geo for each item
+            // Flatten items to enrich efficiently
+            const allItems: any[] = [];
+            sections.forEach((sec: any) => {
+                sec.items.forEach((item: any) => {
+                    item.sectionId = sec.id; // tag for reconstruction
+                    allItems.push(item);
+                });
+            });
+
+            // Limit to avoid hitting API limits hard? Unsplash is 50/hr on free.
+            // Let's just fetch photos for the top 3 highlights for now to save quota.
+            // Or use a cache.
+
+            await Promise.all(allItems.map(async (item) => {
+                // Enrich with Photo
+                try {
+                    const result = await photoService.getPhotos(`${item.title} ${city}`);
+                    if (result.urls.length > 0) {
+                        item.photo = result.urls[0];
+                    }
+                } catch (e) {
+                    console.warn(`Failed photo for ${item.title}`);
+                }
+            }));
+
+            return sections;
+
+        } catch (e) {
+            console.error('Failed to generate sections', e);
+            // Return empty fallback structure
+            return [];
+        }
+    }
+
     // constructPrompt removed in favor of AIPrompts.GENERATE_CHILDREN usage inline
 
     private async invokeBedrock(prompt: string): Promise<any> {
