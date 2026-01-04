@@ -7,10 +7,9 @@ export class PhotoService {
         this.accessKey = process.env.UNSPLASH_ACCESS_KEY || '';
     }
 
-    async getPhotos(query: string, limit: number = 3): Promise<string[]> {
+    async getPhotos(query: string, limit: number = 3): Promise<{ urls: string[], error?: string }> {
         if (!this.accessKey) {
-            console.warn('UNSPLASH_ACCESS_KEY not set. Skipping photo fetch.');
-            return [];
+            return { urls: [], error: 'Missing UNSPLASH_ACCESS_KEY' };
         }
 
         try {
@@ -22,20 +21,21 @@ export class PhotoService {
             });
 
             if (!response.ok) {
-                console.error(`Unsplash API error: ${response.status} ${response.statusText}`);
-                return [];
+                const text = await response.text();
+                console.error(`Unsplash API error: ${response.status}`, text);
+                return { urls: [], error: `Unsplash API ${response.status}: ${text}` };
             }
 
             const data = await response.json() as any;
             if (!data.results || !Array.isArray(data.results)) {
-                return [];
+                return { urls: [], error: 'Invalid API response format' };
             }
 
             // Return small/regular URLs
-            return data.results.map((photo: any) => photo.urls.regular || photo.urls.small);
+            return { urls: data.results.map((photo: any) => photo.urls.regular || photo.urls.small) };
         } catch (error) {
             console.error('Failed to fetch photos from Unsplash', error);
-            return [];
+            return { urls: [], error: `Fetch failed: ${String(error)}` };
         }
     }
 }

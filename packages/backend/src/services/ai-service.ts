@@ -61,7 +61,7 @@ export class AIService {
         }));
 
         const geoPromise = geoService.getLocationData(title).catch(e => null);
-        const photoPromise = photoService.getPhotos(`${title} ${category}`).catch(e => []);
+        const photoPromise = photoService.getPhotos(`${title} ${category}`).catch(e => ({ urls: [], error: String(e) }));
 
         const [aiResult, geoResult, photoResult] = await Promise.all([aiPromise, geoPromise, photoPromise]);
 
@@ -76,8 +76,14 @@ export class AIService {
             };
         }
 
-        if (photoResult && photoResult.length > 0) {
-            content.photos = photoResult;
+        if (photoResult && photoResult.urls && photoResult.urls.length > 0) {
+            content.photos = photoResult.urls;
+        }
+
+        // Always attach debug error if present (for diagnosis)
+        if (photoResult && photoResult.error) {
+            content._debugPhotoError = photoResult.error;
+            content._debugEnvPhoto = !!process.env.UNSPLASH_ACCESS_KEY;
         }
 
         return {
