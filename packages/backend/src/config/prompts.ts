@@ -1,7 +1,7 @@
 export const AIPrompts = {
-    ENRICH_NODE: (title: string, category: string) => `
+    ENRICH_NODE: (title: string, category: string, context?: string) => `
         You are a travel expert.
-        The user wants to start a journey or explore: "${title}" (${category}).
+        The user wants to start a journey or explore: "${title}" (${category})${context ? `\n        Specific Context/Location: "${context}"` : ''}.
 
         Provide a rich, inspiring description for this starting point.
         Also suggest a refined title and category if appropriate.

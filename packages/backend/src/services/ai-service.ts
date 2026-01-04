@@ -55,7 +55,7 @@ export class AIService {
         console.log(`Enriching node: ${title} (Context: ${context || 'None'})`);
 
         // Parallelize AI and Geo
-        const prompt = AIPrompts.ENRICH_NODE(title, category);
+        const prompt = AIPrompts.ENRICH_NODE(title, category, context);
         const aiPromise = this.invokeBedrock(prompt).catch(e => ({
             title, category, content: { description: `Explore ${title}` }, _debugError: String(e)
         }));

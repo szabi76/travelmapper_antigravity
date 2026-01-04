@@ -127,6 +127,7 @@ const Navbar = () => {
                 candidates={candidates}
                 onSelect={confirmLocation}
                 onCancel={cancelLocation}
+                loading={loading}
             />
         </>
     );
