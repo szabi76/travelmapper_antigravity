@@ -49,6 +49,10 @@ export class GeoService {
                 altitude = eleData.features[0].properties.ele;
             }
             debug.altitude = altitude;
+            debug.response = {
+                geo: geoData,
+                elevation: eleData
+            }; // Full payload
 
             return {
                 data: {
