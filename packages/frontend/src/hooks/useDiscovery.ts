@@ -45,10 +45,19 @@ export const useDiscovery = () => {
                 }
                 if (debug.photo) {
                     addLog(`📸 PHOTO: Query="${debug.photo.query}" | Status=${debug.photo.status} | Found=${debug.photo.totalFound || 0} | Returned=${debug.photo.returned || 0}`, debug.photo.error ? 'error' : 'info');
+                    if (debug.photo.response) {
+                        console.log('[DEBUG] Unsplash Response:', debug.photo.response);
+                        // Truncate logs for UI to prevent crashing, but give enough info
+                        addLog(`📸 PAYLOAD: ${JSON.stringify(debug.photo.response).substring(0, 500)}... (See DevTools for full)`, 'info');
+                    }
                     if (debug.photo.error) addLog(`📸 PHOTO ERR: ${debug.photo.error}`, 'error');
                 }
                 if (debug.geo) {
                     addLog(`🌍 GEO: Query="${debug.geo.query}" | Found=${debug.geo.geoFound} | Alt=${debug.geo.altitude}m`, debug.geo.error ? 'error' : 'info');
+                    if (debug.geo.response) {
+                        console.log('[DEBUG] Mapbox Response:', debug.geo.response);
+                        addLog(`🌍 PAYLOAD: ${JSON.stringify(debug.geo.response).substring(0, 500)}... (See DevTools for full)`, 'info');
+                    }
                 }
             } else {
                 // Fallback for old API versions

@@ -42,6 +42,7 @@ export class PhotoService {
             debug.totalFound = data.total;
             debug.totalPages = data.total_pages;
             debug.returned = data.results.length;
+            debug.response = data; // Full payload
 
             // Return small/regular URLs
             return { urls: data.results.map((photo: any) => photo.urls.regular || photo.urls.small), debug };
