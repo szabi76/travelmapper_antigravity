@@ -61,6 +61,15 @@ export class ApiStack extends cdk.Stack {
             timeout: cdk.Duration.seconds(10),
         });
 
+        // Search Handler
+        const searchHandler = new nodejs.NodejsFunction(this, 'SearchHandler', {
+            runtime: lambda.Runtime.NODEJS_20_X,
+            entry: path.join(__dirname, '../src/handlers/search-handler.ts'),
+            handler: 'handler',
+            environment,
+            timeout: cdk.Duration.seconds(10),
+        });
+
         // Grant permissions
         props.discoveriesTable.grantReadWriteData(discoveryHandler);
         props.nodesTable.grantReadWriteData(discoveryHandler); // Creates root node
@@ -113,5 +122,9 @@ export class ApiStack extends cdk.Stack {
         const session = sessions.addResource('{id}');
         session.addMethod('GET', new apigateway.LambdaIntegration(sessionHandler));
         session.addMethod('PUT', new apigateway.LambdaIntegration(sessionHandler));
+
+        const geo = api.root.addResource('geo');
+        const search = geo.addResource('search');
+        search.addMethod('GET', new apigateway.LambdaIntegration(searchHandler));
     }
 }

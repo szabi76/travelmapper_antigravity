@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createDiscovery, listDiscoveries, getNode, enrichNode } from '../lib/api';
+import { createDiscovery, listDiscoveries, getNode, enrichNode, searchLocation } from '../lib/api';
 import { useGraphStore, useSessionStore, useLogStore } from '../lib/store';
 import type { Discovery } from '@travelmapper/shared';
 
@@ -8,6 +8,11 @@ export const useDiscovery = () => {
     const [loading, setLoading] = useState(false);
     const [discoveries, setDiscoveries] = useState<Discovery[]>([]);
     const [historyOpen, setHistoryOpen] = useState(false);
+
+    // Modal State
+    const [locationModalOpen, setLocationModalOpen] = useState(false);
+    const [candidates, setCandidates] = useState<any[]>([]);
+    const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
 
     const { clearGraph, addNodes, setSelectedNode } = useGraphStore();
     const { setSessionId, sessionId } = useSessionStore();
@@ -107,6 +112,7 @@ export const useDiscovery = () => {
             if (rootNode.content?._debugError) {
                 addLog(`AI Warning: ${rootNode.content._debugError}`, 'error');
             }
+
         } catch (e) {
             console.error('Failed to load session', e);
             addLog(`Failed to load session: ${String(e)}`, 'error');
@@ -115,27 +121,71 @@ export const useDiscovery = () => {
         }
     };
 
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!prompt.trim()) return;
-
+    const performCreation = async (currentPrompt: string, context?: string) => {
         setLoading(true);
-        addLog(`Starting new journey: ${prompt}`, 'info');
+        addLog(`Starting new journey: ${currentPrompt}${context ? ` (${context})` : ''}`, 'info');
 
         try {
-            const discovery = await createDiscovery(prompt);
+            const discovery = await createDiscovery(currentPrompt, context);
             addLog('Discovery created. Fetching details...', 'success');
 
             await fetchHistory();
             await loadSession(discovery);
             setPrompt('');
+            setPendingPrompt(null);
+            setLocationModalOpen(false);
+            setCandidates([]);
         } catch (error: any) {
             const msg = error.response?.data?.message || error.message || String(error);
             addLog(`Failed to create discovery: ${msg}`, 'error');
             alert(`Failed: ${msg}`);
-        } finally {
-            setLoading(false);
+            setLoading(false); // Only unset loading on fail, otherwise let loadSession handle it
         }
+    };
+
+    const handleCreate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!prompt.trim()) return;
+
+        // 1. Analyze for ambiguity
+        setLoading(true);
+        addLog('Checking location...', 'info');
+        try {
+            const results = await searchLocation(prompt);
+
+            if (results && results.length > 1) {
+                // Ambiguous! Open modal
+                addLog(`Found ${results.length} locations. Please select one.`, 'info');
+                setCandidates(results);
+                setPendingPrompt(prompt);
+                setLocationModalOpen(true);
+                setLoading(false); // Pause loading while user selects
+                return;
+            } else if (results && results.length === 1) {
+                // Exact match, use it contextually
+                await performCreation(prompt, results[0].name);
+                return;
+            }
+
+            // 0 results or failure, proceed with just prompt (AI handles it)
+            await performCreation(prompt);
+
+        } catch (e) {
+            console.error('Search failed, falling back to AI', e);
+            await performCreation(prompt);
+        }
+    };
+
+    const confirmLocation = (location: string) => {
+        if (!pendingPrompt) return;
+        performCreation(pendingPrompt, location);
+    };
+
+    const cancelLocation = () => {
+        setLocationModalOpen(false);
+        setPendingPrompt(null);
+        setCandidates([]);
+        addLog('Creation cancelled selected.', 'info');
     };
 
     return {
@@ -148,6 +198,11 @@ export const useDiscovery = () => {
         sessionId,
         fetchHistory,
         loadSession,
-        handleCreate
+        handleCreate,
+        // Modal State
+        locationModalOpen,
+        candidates,
+        confirmLocation,
+        cancelLocation
     };
 };

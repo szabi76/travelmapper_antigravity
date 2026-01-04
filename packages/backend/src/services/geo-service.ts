@@ -70,4 +70,26 @@ export class GeoService {
             return { data: null, debug };
         }
     }
+
+    async search(query: string): Promise<any[]> {
+        if (!MAPBOX_TOKEN) return [];
+
+        try {
+            const geoUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&limit=5`;
+            const geoRes = await fetch(geoUrl);
+            const geoData = await geoRes.json() as any;
+
+            if (!geoData.features) return [];
+
+            return geoData.features.map((f: any) => ({
+                id: f.id,
+                name: f.place_name,
+                center: f.center,
+                context: f.context
+            }));
+        } catch (e) {
+            console.error('Geo Search Error', e);
+            return [];
+        }
+    }
 }

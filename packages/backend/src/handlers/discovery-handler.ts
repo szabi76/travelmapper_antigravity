@@ -27,7 +27,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     try {
         if (method === 'POST' && path === '/discoveries') {
             const body = JSON.parse(event.body || '{}');
-            const { prompt } = body;
+            const { prompt, context } = body;
 
             if (!prompt) {
                 return { statusCode: 400, headers, body: JSON.stringify({ message: 'Prompt required' }) };
@@ -60,7 +60,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
             const aiService = new AIService(); // Instantiate service
             let enrichedData;
             try {
-                enrichedData = await aiService.enrichNode(prompt, 'Destination');
+                enrichedData = await aiService.enrichNode(prompt, 'Destination', context);
             } catch (e) {
                 console.error('Enrichment failed, using defaults', e);
                 enrichedData = {

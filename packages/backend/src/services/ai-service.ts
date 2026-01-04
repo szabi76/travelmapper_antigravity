@@ -51,8 +51,8 @@ export class AIService {
         }
     }
 
-    async enrichNode(title: string, category: string): Promise<any> {
-        console.log(`Enriching node: ${title}`);
+    async enrichNode(title: string, category: string, context?: string): Promise<any> {
+        console.log(`Enriching node: ${title} (Context: ${context || 'None'})`);
 
         // Parallelize AI and Geo
         const prompt = AIPrompts.ENRICH_NODE(title, category);
@@ -60,8 +60,10 @@ export class AIService {
             title, category, content: { description: `Explore ${title}` }, _debugError: String(e)
         }));
 
-        const geoPromise = geoService.getLocationData(title).catch(e => ({ data: null, debug: { error: String(e) } }));
-        const photoPromise = photoService.getPhotos(`${title} ${category}`).catch(e => ({ urls: [], debug: { error: String(e) }, error: String(e) }));
+        const searchQuery = context || `${title} ${category}`;
+
+        const geoPromise = geoService.getLocationData(searchQuery).catch(e => ({ data: null, debug: { error: String(e) } }));
+        const photoPromise = photoService.getPhotos(searchQuery).catch(e => ({ urls: [], debug: { error: String(e) }, error: String(e) }));
 
         const [aiResult, geoResult, photoResult] = await Promise.all([aiPromise, geoPromise, photoPromise]);
 

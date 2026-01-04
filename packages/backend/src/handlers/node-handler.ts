@@ -89,7 +89,11 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
             // Call AI
             let enrichedData;
             try {
-                enrichedData = await aiService.enrichNode(node.title, node.category);
+                // Parse body safely
+                const body = event.body ? JSON.parse(event.body) : {};
+                const context = body.context; // Manual location override
+
+                enrichedData = await aiService.enrichNode(node.title, node.category, context);
             } catch (e: any) {
                 console.error('Enrichment failed', e);
                 return {

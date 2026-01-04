@@ -52,8 +52,8 @@ export interface CreateDiscoveryRequest {
     prompt: string;
 }
 
-export const createDiscovery = async (prompt: string) => {
-    const response = await api.post('/discoveries', { prompt });
+export const createDiscovery = async (prompt: string, context?: string) => {
+    const response = await api.post('/discoveries', { prompt, context });
     return response.data;
 };
 
@@ -78,8 +78,13 @@ export const listDiscoveries = async () => {
     return response.data;
 };
 
-export const enrichNode = async (id: string) => {
-    const response = await api.post(`/nodes/${cleanId(id)}/enrich`);
+export const enrichNode = async (id: string, context?: string) => {
+    const response = await api.post(`/nodes/${cleanId(id)}/enrich`, { context });
+    return response.data;
+};
+
+export const searchLocation = async (query: string) => {
+    const response = await api.get(`/geo/search`, { params: { q: query } });
     return response.data;
 };
 
