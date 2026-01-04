@@ -34,6 +34,15 @@ export const useDiscovery = () => {
             // Load Root Node
             let rootNode = await getNode(discovery.rootNodeId);
 
+            // DEBUG: Check for photos
+            addLog(`Node loaded. Photos: ${rootNode.content?.photos?.length || 0}`, rootNode.content?.photos?.length ? 'success' : 'error');
+            if (rootNode.content?.photos) {
+                console.log('Photos:', rootNode.content.photos);
+            } else {
+                console.log('No photos found in content:', rootNode.content);
+                addLog(`Debug content keys: ${Object.keys(rootNode.content || {}).join(', ')}`, 'info');
+            }
+
             // Self-Healing
             const isFallback = !rootNode.content?.description ||
                 !rootNode.content.location || // Missing location data
