@@ -15,6 +15,7 @@ interface ApiStackProps extends cdk.StackProps {
     allowedOrigin: string;
     apiSecretToken: string;
     mapboxAccessToken: string;
+    unsplashAccessKey: string;
 }
 
 export class ApiStack extends cdk.Stack {
@@ -30,6 +31,7 @@ export class ApiStack extends cdk.Stack {
             ALLOWED_ORIGIN: props.allowedOrigin,
             API_SECRET_TOKEN: props.apiSecretToken,
             MAPBOX_ACCESS_TOKEN: props.mapboxAccessToken,
+            UNSPLASH_ACCESS_KEY: props.unsplashAccessKey,
         };
 
         // Discovery Handler

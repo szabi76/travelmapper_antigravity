@@ -13,6 +13,7 @@ export type NodeType = 'template' | 'discovery';
 
 export interface NodeContent {
     [key: string]: any;
+    photos?: string[];
 }
 
 export interface Node {

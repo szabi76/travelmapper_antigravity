@@ -23,5 +23,6 @@ const apiStack = new ApiStack(app, `${prefix}-TravelDiscoveryApiStack`, {
   allowedOrigin: frontendStack.siteUrl,
   apiSecretToken: process.env.API_SECRET_TOKEN || 'local-dev-token',
   mapboxAccessToken: process.env.MAPBOX_ACCESS_TOKEN || '',
+  unsplashAccessKey: process.env.UNSPLASH_ACCESS_KEY || '',
 });
 

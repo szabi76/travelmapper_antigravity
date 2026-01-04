@@ -40,6 +40,22 @@ export default function NodeDetails() {
                     </p>
                 </div>
 
+                {/* Photos */}
+                {safeContent.photos && safeContent.photos.length > 0 && (
+                    <div className="flex gap-2 overflow-x-auto pb-2 -mx-5 px-5 snap-x">
+                        {safeContent.photos.map((url: string, i: number) => (
+                            <div key={i} className="flex-none w-48 h-32 relative rounded-lg overflow-hidden shadow-sm snap-center border border-gray-100">
+                                <img
+                                    src={url}
+                                    alt={`${title} ${i + 1}`}
+                                    className="w-full h-full object-cover"
+                                    loading="lazy"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 {/* Location Info */}
                 {safeContent.location && (
                     <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">

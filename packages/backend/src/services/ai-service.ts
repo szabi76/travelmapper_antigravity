@@ -5,11 +5,13 @@ import * as crypto from 'crypto';
 import { Node, NodeCategory, NodeType } from '../types';
 import { AIPrompts } from '../config/prompts';
 import { GeoService } from './geo-service';
+import { PhotoService } from './photo-service';
 
 const bedrock = new BedrockRuntimeClient({ region: process.env.AWS_REGION });
 const AI_CACHE_TABLE = process.env.AI_CACHE_TABLE!;
 const MODEL_ID = 'global.anthropic.claude-sonnet-4-5-20250929-v1:0';
 const geoService = new GeoService();
+const photoService = new PhotoService();
 
 export class AIService {
 
@@ -59,8 +61,9 @@ export class AIService {
         }));
 
         const geoPromise = geoService.getLocationData(title).catch(e => null);
+        const photoPromise = photoService.getPhotos(`${title} ${category}`).catch(e => []);
 
-        const [aiResult, geoResult] = await Promise.all([aiPromise, geoPromise]);
+        const [aiResult, geoResult, photoResult] = await Promise.all([aiPromise, geoPromise, photoPromise]);
 
         // Merge
         const content = aiResult.content || {};
@@ -71,6 +74,10 @@ export class AIService {
                 alt: geoResult.altitude,
                 address: geoResult.placeName
             };
+        }
+
+        if (photoResult && photoResult.length > 0) {
+            content.photos = photoResult;
         }
 
         return {
