@@ -1,13 +1,11 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { ddbDocClient } from '../utils/ddb';
-import { GetCommand, UpdateCommand, QueryCommand, BatchWriteCommand } from '@aws-sdk/lib-dynamodb';
 import { Node, Discovery } from '../types';
 import { AIService } from '../services/ai-service';
+import { NodeService } from '../services/node-service';
 import { v4 as uuidv4 } from 'uuid';
 
-const NODES_TABLE = process.env.NODES_TABLE!;
-const DISCOVERIES_TABLE = process.env.DISCOVERIES_TABLE!;
 const aiService = new AIService();
+const nodeService = new NodeService();
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const method = event.httpMethod;
@@ -35,15 +33,11 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         }
 
         // 1. Fetch Node
-        const nodeResult = await ddbDocClient.send(new GetCommand({
-            TableName: NODES_TABLE,
-            Key: { PK: nodeId, SK: 'METADATA' }
-        }));
+        const node = await nodeService.getNode(nodeId);
 
-        if (!nodeResult.Item) {
+        if (!node) {
             return { statusCode: 404, headers, body: JSON.stringify({ message: 'Node not found' }) };
         }
-        const node = nodeResult.Item as Node;
 
         if (method === 'GET' && path === '/nodes/{id}') {
             return { statusCode: 200, headers, body: JSON.stringify(node) };
@@ -53,22 +47,18 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
             // If children loaded, fetch and return
             if (node.childrenLoaded) {
                 console.log('Children already loaded. Fetching from DB.');
-                const children = await fetchChildren(node.discoveryId, node.id);
+                const children = await nodeService.getChildren(node.discoveryId, node.id);
                 return { statusCode: 200, headers, body: JSON.stringify(children) };
             }
 
             console.log('Generating children...');
             // Need Discovery Prompt
-            const discoveryResult = await ddbDocClient.send(new GetCommand({
-                TableName: DISCOVERIES_TABLE,
-                Key: { PK: node.discoveryId, SK: 'METADATA' }
-            }));
-            const discovery = discoveryResult.Item as Discovery;
+            const discovery = await nodeService.getDiscovery(node.discoveryId);
+            if (!discovery) {
+                return { statusCode: 404, headers, body: JSON.stringify({ message: 'Discovery not found' }) };
+            }
 
             // Generate
-            // Find existing siblings? For now passing empty or fetching parent's siblings if needed.
-            // Assuming no strict sibling check for MVP apart from generating.
-
             const generatedItems = await aiService.generateChildren(node, discovery.prompt, []);
 
             // Map to Node objects
@@ -85,32 +75,10 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
             }));
 
             // Write to DB
-            // BatchWrite only supports 25 requests. We expect 3-5.
-            const putRequests = newNodes.map(n => ({
-                PutRequest: {
-                    Item: {
-                        PK: n.id,
-                        SK: 'METADATA',
-                        ...n
-                    }
-                }
-            }));
-
-            if (putRequests.length > 0) {
-                await ddbDocClient.send(new BatchWriteCommand({
-                    RequestItems: {
-                        [NODES_TABLE]: putRequests
-                    }
-                }));
-            }
+            await nodeService.createNodes(newNodes);
 
             // Update Parent
-            await ddbDocClient.send(new UpdateCommand({
-                TableName: NODES_TABLE,
-                Key: { PK: node.id, SK: 'METADATA' },
-                UpdateExpression: 'set childrenLoaded = :t',
-                ExpressionAttributeValues: { ':t': true }
-            }));
+            await nodeService.setChildrenLoaded(node.id);
 
             return { statusCode: 200, headers, body: JSON.stringify(newNodes) };
         }
@@ -137,18 +105,13 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
                 _debugError: enrichedData._debugError // Pass error if any
             };
 
-            await ddbDocClient.send(new UpdateCommand({
-                TableName: NODES_TABLE,
-                Key: { PK: node.id, SK: 'METADATA' },
-                UpdateExpression: 'set content = :c',
-                ExpressionAttributeValues: { ':c': updatedContent }
-            }));
+            const updatedNode = await nodeService.updateNodeContent(node.id, updatedContent);
 
             // Return updated node
             return {
                 statusCode: 200,
                 headers,
-                body: JSON.stringify({ ...node, content: updatedContent })
+                body: JSON.stringify(updatedNode)
             };
         }
 
@@ -163,17 +126,3 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         };
     }
 };
-
-async function fetchChildren(discoveryId: string, parentNodeId: string): Promise<Node[]> {
-    // Query by DiscoveryId GSI
-    const result = await ddbDocClient.send(new QueryCommand({
-        TableName: NODES_TABLE,
-        IndexName: 'DiscoveryIndex',
-        KeyConditionExpression: 'discoveryId = :did',
-        ExpressionAttributeValues: { ':did': discoveryId }
-    }));
-
-    // Filter in memory for parentNodeId
-    const nodes = (result.Items || []) as Node[];
-    return nodes.filter(n => n.parentNodeId === parentNodeId);
-}

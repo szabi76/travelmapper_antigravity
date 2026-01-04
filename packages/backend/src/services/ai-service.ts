@@ -17,6 +17,38 @@ export class AIService {
         return crypto.createHash('md5').update(JSON.stringify(context)).digest('hex');
     }
 
+    private extractJSON(text: string): any {
+        try {
+            // Find first '{' or '['
+            const firstOpenBrace = text.indexOf('{');
+            const firstOpenBracket = text.indexOf('[');
+
+            let startIndex = -1;
+            if (firstOpenBrace !== -1 && firstOpenBracket !== -1) {
+                startIndex = Math.min(firstOpenBrace, firstOpenBracket);
+            } else if (firstOpenBrace !== -1) {
+                startIndex = firstOpenBrace;
+            } else {
+                startIndex = firstOpenBracket;
+            }
+
+            if (startIndex === -1) throw new Error('No JSON found');
+
+            // Find last '}' or ']'
+            const lastCloseBrace = text.lastIndexOf('}');
+            const lastCloseBracket = text.lastIndexOf(']');
+            const endIndex = Math.max(lastCloseBrace, lastCloseBracket);
+
+            if (endIndex === -1 || endIndex <= startIndex) throw new Error('No valid JSON block found');
+
+            const jsonStr = text.substring(startIndex, endIndex + 1);
+            return JSON.parse(jsonStr);
+        } catch (e) {
+            console.warn('Failed to extract JSON from text', text.substring(0, 100) + '...');
+            throw e;
+        }
+    }
+
     async enrichNode(title: string, category: string): Promise<any> {
         console.log(`Enriching node: ${title}`);
 
@@ -132,11 +164,7 @@ export class AIService {
             const decodedBody = new TextDecoder().decode(response.body);
             const responseBody = JSON.parse(decodedBody);
             const content = responseBody.content[0].text;
-
-            // Attempt to parse JSON from content
-            // Handle potential markdown wrap
-            const jsonStr = content.replace(/```json/g, '').replace(/```/g, '').trim();
-            return JSON.parse(jsonStr);
+            return this.extractJSON(content);
         } catch (error) {
             console.error('Bedrock invocation failed', error);
             throw error;
