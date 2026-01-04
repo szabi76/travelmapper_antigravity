@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { createDiscovery, listDiscoveries, getNode, enrichNode } from '../lib/api';
 import { useGraphStore, useSessionStore, useLogStore } from '../lib/store';
-import { Discovery } from '@travelmapper/shared';
+import type { Discovery } from '@travelmapper/shared';
 
 export const useDiscovery = () => {
     const [prompt, setPrompt] = useState('');
