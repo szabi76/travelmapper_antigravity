@@ -40,7 +40,14 @@ export const useDiscovery = () => {
                 console.log('Photos:', rootNode.content.photos);
             } else {
                 console.log('No photos found in content:', rootNode.content);
-                addLog(`Debug content keys: ${Object.keys(rootNode.content || {}).join(', ')}`, 'info');
+                // Explicitly log the error for the user
+                if (rootNode.content?._debugPhotoError) {
+                    addLog(`PHOTO ERROR: ${rootNode.content._debugPhotoError}`, 'error');
+                }
+                if (rootNode.content?._debugEnvPhoto !== undefined) {
+                    addLog(`Backend Has Key: ${rootNode.content._debugEnvPhoto}`, 'info');
+                }
+                addLog(`Debug keys: ${Object.keys(rootNode.content || {}).join(', ')}`, 'info');
             }
 
             // Self-Healing
