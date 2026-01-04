@@ -7,13 +7,41 @@ const api = axios.create({
 });
 
 // Add interceptor to inject token
+import { useLogStore } from './store';
+
+// Add interceptor to inject token and log requests
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('api_token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Log Request
+    const method = config.method?.toUpperCase() || 'GET';
+    const url = config.url;
+    useLogStore.getState().addLog(`[API] -> ${method} ${url}`, 'info');
+
     return config;
 });
+
+// Add interceptor to log responses
+api.interceptors.response.use(
+    (response) => {
+        const method = response.config.method?.toUpperCase() || 'GET';
+        const url = response.config.url;
+        useLogStore.getState().addLog(`[API] <- ${method} ${url} (${response.status})`, 'success');
+        return response;
+    },
+    (error) => {
+        const method = error.config?.method?.toUpperCase() || 'UNKNOWN';
+        const url = error.config?.url || 'UNKNOWN';
+        const status = error.response?.status || 'ERR';
+        const message = error.message || 'Unknown Error';
+
+        useLogStore.getState().addLog(`[API] !! ${method} ${url} (${status}): ${message}`, 'error');
+        return Promise.reject(error);
+    }
+);
 
 // Helper to strip internal prefixes (NODE#, DISCOVERY#) to avoid URL encoding issues with '#'
 const cleanId = (id: string) => {
