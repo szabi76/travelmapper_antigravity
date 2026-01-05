@@ -12,7 +12,13 @@ export const AIPrompts = {
             "category": "Refined Category",
             "content": {
                 "description": "Inspiring description...",
-                "bestTimeVisit": "...",
+                "quickFacts": {
+                    "language": "e.g. Italian",
+                    "currency": "e.g. Euro (€)",
+                    "bestTime": "e.g. May-Sept",
+                    "tipping": "e.g. 10% expected",
+                    "safety": "e.g. Very Safe"
+                },
                 "tags": ["tag1", "tag2"]
             }
         }

@@ -19,6 +19,13 @@ export interface NodeContent {
         title: string;
         items: { title: string; type: string; description: string; photo?: string }[];
     }[];
+    quickFacts?: {
+        language: string;
+        currency: string;
+        bestTime: string;
+        tipping: string;
+        safety: string;
+    };
 }
 
 export interface Node {

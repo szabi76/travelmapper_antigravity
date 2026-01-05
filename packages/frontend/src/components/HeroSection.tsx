@@ -23,39 +23,61 @@ export default function HeroSection({ node }: HeroSectionProps) {
             </div>
 
             {/* Content Overlay */}
-            <div className="relative p-8 md:p-16 text-white max-w-7xl mx-auto z-10 w-full">
-                <div className="animate-fade-in-up">
+            <div className="relative p-8 md:p-16 text-white max-w-7xl mx-auto z-10 w-full flex flex-col md:flex-row items-end gap-12">
+
+                {/* LEFT COLUMN: Text Content (70%) */}
+                <div className="flex-1 animate-fade-in-up">
                     <span className="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-widest uppercase bg-white/20 backdrop-blur-md rounded-full border border-white/30">
                         The {safeContent.bestTimeVisit ? 'Perfect' : 'Ultimate'} Guide
                     </span>
                     <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 shadow-sm leading-[1.1]">
                         {title}
                     </h1>
-                    <p className="text-lg md:text-xl font-light opacity-90 max-w-3xl leading-relaxed text-shadow-sm mb-8">
+                    <p className="text-lg md:text-xl font-light opacity-90 leading-relaxed text-shadow-sm mb-0 max-w-2xl">
                         {safeContent.description}
                     </p>
+                </div>
 
-                    {/* Quick Stats Grid */}
-                    <div className="flex flex-wrap gap-x-12 gap-y-6 pt-8 border-t border-white/20">
-                        {safeContent.bestTimeVisit && (
-                            <div>
-                                <h4 className="text-xs font-bold uppercase opacity-70 mb-1 tracking-wider">Best Time</h4>
-                                <p className="font-medium text-lg">{safeContent.bestTimeVisit}</p>
-                            </div>
-                        )}
-                        {safeContent.location?.alt !== undefined && (
-                            <div>
-                                <h4 className="text-xs font-bold uppercase opacity-70 mb-1 tracking-wider">Elevation</h4>
-                                <p className="font-medium text-lg">{safeContent.location.alt}m</p>
-                            </div>
-                        )}
-                        {/* Currency Placeholder */}
-                        <div>
-                            <h4 className="text-xs font-bold uppercase opacity-70 mb-1 tracking-wider">Currency</h4>
-                            <p className="font-medium text-lg">Local / USD</p>
+                {/* RIGHT COLUMN: Quick Facts Card (30%) */}
+                <div className="w-full md:w-[320px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl animate-fade-in-up delay-100 flex-shrink-0">
+                    <h3 className="text-sm font-bold uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-white/20 pb-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        Travel Guide Facts
+                    </h3>
+
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <span className="text-xs uppercase opacity-70">Best Time</span>
+                            <span className="font-medium text-right text-sm">{safeContent.quickFacts?.bestTime || safeContent.bestTimeVisit || 'Year-round'}</span>
                         </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-xs uppercase opacity-70">Currency</span>
+                            <span className="font-medium text-right text-sm">{safeContent.quickFacts?.currency || 'Local'}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-xs uppercase opacity-70">Language</span>
+                            <span className="font-medium text-right text-sm">{safeContent.quickFacts?.language || 'Local'}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-xs uppercase opacity-70">Safety</span>
+                            <span className="px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30 text-emerald-100 text-[10px] font-bold uppercase">
+                                {safeContent.quickFacts?.safety || 'Standard'}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-xs uppercase opacity-70">Tipping</span>
+                            <span className="font-medium text-right text-sm">{safeContent.quickFacts?.tipping || 'Optional'}</span>
+                        </div>
+                        {/* Elevation Fallback */}
+                        {safeContent.location?.alt !== undefined && (
+                            <div className="flex justify-between items-center border-t border-white/10 pt-3 mt-1">
+                                <span className="text-xs uppercase opacity-70">Elevation</span>
+                                <span className="font-medium text-right text-sm">{safeContent.location.alt}m</span>
+                            </div>
+                        )}
                     </div>
                 </div>
+
             </div>
         </div>
     );
