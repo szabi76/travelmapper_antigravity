@@ -18,19 +18,20 @@ export default function HeroSection({ node }: HeroSectionProps) {
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
                 style={{ backgroundImage: `url(${bgImage})` }}
             >
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/80" />
+                {/* Stronger gradient for text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
             </div>
 
             {/* Content Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16 text-white max-w-5xl mx-auto">
+            <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16 text-white max-w-5xl mx-auto z-10">
                 <div className="animate-fade-in-up">
                     <span className="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-widest uppercase bg-white/20 backdrop-blur-md rounded-full border border-white/30">
                         The {safeContent.bestTimeVisit ? 'Perfect' : 'Ultimate'} Guide
                     </span>
-                    <h1 className="text-6xl md:text-8xl font-black tracking-tight mb-4 shadow-sm">
+                    <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-4 shadow-sm leading-tight">
                         {title}
                     </h1>
-                    <p className="text-lg md:text-2xl font-light opacity-90 max-w-2xl leading-relaxed text-shadow-sm">
+                    <p className="text-lg md:text-xl font-light opacity-90 max-w-2xl leading-relaxed text-shadow-sm line-clamp-4 md:line-clamp-6">
                         {safeContent.description}
                     </p>
 
