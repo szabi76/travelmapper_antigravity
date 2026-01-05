@@ -40,6 +40,26 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         }
 
         if (method === 'GET' && path === '/nodes/{id}') {
+            // Lazy Backfill for Sections (if missing)
+            if (!node.content || !node.content.sections) {
+                console.log('Backfilling sections for legacy node:', node.title);
+                try {
+                    // We need context or just use title
+                    const sections = await aiService.generateSections(node.title, node.category);
+
+                    if (sections && sections.length > 0) {
+                        // Update Node in DB
+                        const updatedContent = {
+                            ...(node.content || {}),
+                            sections
+                        };
+                        const updated = await nodeService.updateNodeContent(node.id, updatedContent);
+                        return { statusCode: 200, headers, body: JSON.stringify(updated) };
+                    }
+                } catch (e) {
+                    console.warn('Failed to backfill', e);
+                }
+            }
             return { statusCode: 200, headers, body: JSON.stringify(node) };
         }
 

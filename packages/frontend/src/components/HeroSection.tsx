@@ -12,10 +12,10 @@ export default function HeroSection({ node }: HeroSectionProps) {
     const bgImage = safeContent.photos?.[0] || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop';
 
     return (
-        <div className="relative h-[70vh] w-full overflow-hidden">
+        <div className="relative min-h-[75vh] w-full flex flex-col justify-end">
             {/* Background Image with Parallax-like feel */}
             <div
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
+                className="absolute inset-0 bg-cover bg-center"
                 style={{ backgroundImage: `url(${bgImage})` }}
             >
                 {/* Stronger gradient for text readability */}
@@ -23,36 +23,36 @@ export default function HeroSection({ node }: HeroSectionProps) {
             </div>
 
             {/* Content Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16 text-white max-w-5xl mx-auto z-10">
+            <div className="relative p-8 md:p-16 text-white max-w-7xl mx-auto z-10 w-full">
                 <div className="animate-fade-in-up">
                     <span className="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-widest uppercase bg-white/20 backdrop-blur-md rounded-full border border-white/30">
                         The {safeContent.bestTimeVisit ? 'Perfect' : 'Ultimate'} Guide
                     </span>
-                    <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-4 shadow-sm leading-tight">
+                    <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 shadow-sm leading-[1.1]">
                         {title}
                     </h1>
-                    <p className="text-lg md:text-xl font-light opacity-90 max-w-2xl leading-relaxed text-shadow-sm line-clamp-4 md:line-clamp-6">
+                    <p className="text-lg md:text-xl font-light opacity-90 max-w-3xl leading-relaxed text-shadow-sm mb-8">
                         {safeContent.description}
                     </p>
 
                     {/* Quick Stats Grid */}
-                    <div className="flex flex-wrap gap-6 mt-8 pt-8 border-t border-white/20">
+                    <div className="flex flex-wrap gap-x-12 gap-y-6 pt-8 border-t border-white/20">
                         {safeContent.bestTimeVisit && (
                             <div>
-                                <h4 className="text-xs font-bold uppercase opacity-70 mb-1">Best Time</h4>
-                                <p className="font-medium">{safeContent.bestTimeVisit}</p>
+                                <h4 className="text-xs font-bold uppercase opacity-70 mb-1 tracking-wider">Best Time</h4>
+                                <p className="font-medium text-lg">{safeContent.bestTimeVisit}</p>
                             </div>
                         )}
                         {safeContent.location?.alt !== undefined && (
                             <div>
-                                <h4 className="text-xs font-bold uppercase opacity-70 mb-1">Elevation</h4>
-                                <p className="font-medium">{safeContent.location.alt}m</p>
+                                <h4 className="text-xs font-bold uppercase opacity-70 mb-1 tracking-wider">Elevation</h4>
+                                <p className="font-medium text-lg">{safeContent.location.alt}m</p>
                             </div>
                         )}
                         {/* Currency Placeholder */}
                         <div>
-                            <h4 className="text-xs font-bold uppercase opacity-70 mb-1">Currency</h4>
-                            <p className="font-medium">Local / USD</p>
+                            <h4 className="text-xs font-bold uppercase opacity-70 mb-1 tracking-wider">Currency</h4>
+                            <p className="font-medium text-lg">Local / USD</p>
                         </div>
                     </div>
                 </div>

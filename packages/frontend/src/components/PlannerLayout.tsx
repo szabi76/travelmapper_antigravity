@@ -25,7 +25,7 @@ export default function PlannerLayout() {
             <HeroSection node={rootNode} />
 
             {/* Main Content Area */}
-            <div className="max-w-5xl mx-auto px-6 py-12 space-y-16">
+            <div className="max-w-7xl mx-auto px-6 py-12 space-y-16">
 
                 {/* Placeholder for Bento Grid */}
                 {/* Bento Grid (Overview) */}
