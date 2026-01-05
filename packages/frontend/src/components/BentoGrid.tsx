@@ -1,5 +1,5 @@
 interface BentoGridProps {
-    sections: any[];
+    sections: any[] | undefined;
 }
 
 export default function BentoGrid({ sections }: BentoGridProps) {
